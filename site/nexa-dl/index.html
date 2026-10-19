@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>nexa · NEXA CLI</title>
+<meta name="description" content="Self-contained AI coding agent for Japanese SI delivery. Scaffolds the 6-phase SDLC, drives requirement/design generation, validation gates, and a FARE knowledge base.">
+<style>
+*{box-sizing:border-box}
+:root{
+  --bg:#f6f4ef; --raised:#fffdfa; --ink:#181714; --muted:#6d6960; --faint:#a29d93;
+  --line:#e5e0d6; --code-bg:#1b1a17; --code-ink:#eae6dd; --code-muted:#8b877e; --code-line:#2c2a26;
+  --accent:#c0532e; --accent-ink:#9e4020; --accent-soft:rgba(192,83,46,.10); --accent-edge:rgba(192,83,46,.26);
+  --prompt:#b0785a; --comment:#c9a06a;
+  --radius:10px;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#121110; --raised:#1a1917; --ink:#ece8df; --muted:#9c978d; --faint:#6f6a61;
+  --line:#2a2724; --code-bg:#0e0d0c; --code-ink:#e6e2d9; --code-muted:#847f76; --code-line:#242220;
+  --accent:#e0895f; --accent-ink:#eaa07e; --accent-soft:rgba(224,137,95,.14); --accent-edge:rgba(224,137,95,.30);
+  --prompt:#b98a68; --comment:#c7a86a;
+}}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+.wrap{max-width:812px;margin:0 auto;padding:0 24px}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:22px 0 0;font-family:var(--mono);font-size:12.5px;letter-spacing:.02em;color:var(--muted)}
+.brand{color:var(--muted);text-decoration:none}
+.brand b{color:var(--ink);font-weight:600}
+.topbar a{color:var(--muted);text-decoration:none;transition:color .15s}
+.topbar a:hover{color:var(--accent-ink)}
+.toplinks{display:flex;gap:16px}
+header.hero{padding:60px 0 8px;border-bottom:1px solid var(--line);margin-bottom:46px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-ink);margin:0 0 16px}
+h1{font-size:clamp(2.5rem,7vw,3.4rem);line-height:1;letter-spacing:-.03em;font-weight:680;margin:0 0 .3em;font-family:var(--mono)}
+.pill{display:inline-block;margin-left:.55rem;font-family:var(--mono);font-size:.8rem;font-weight:600;color:var(--accent-ink);background:var(--accent-soft);border:1px solid var(--accent-edge);padding:3px 10px;border-radius:999px;transform:translateY(-.4em)}
+.lede{font-size:1.2rem;line-height:1.55;color:var(--muted);max-width:62ch;margin:.1em 0 0}
+.lede b{color:var(--ink);font-weight:600}
+.phases{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 0;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.phases span{border:1px solid var(--line);border-radius:6px;padding:3px 9px;background:var(--raised)}
+.phases .arw{border:0;background:none;color:var(--faint);padding:3px 0}
+section{margin:0 0 42px}
+h2{font-size:.9rem;font-family:var(--mono);letter-spacing:.01em;font-weight:600;color:var(--ink);margin:0 0 4px;display:flex;align-items:baseline;gap:.55rem}
+h2 .n{color:var(--faint);font-weight:500}
+.sub{color:var(--muted);font-size:.96rem;margin:.15em 0 14px}
+.cmd{background:var(--code-bg);border:1px solid var(--code-line);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.cmd.hl{border-color:var(--accent-edge);box-shadow:0 0 0 3px var(--accent-soft)}
+.cmd-head{display:flex;align-items:center;justify-content:space-between;padding:7px 10px 7px 14px;border-bottom:1px solid var(--code-line)}
+.cmd-tag{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--code-muted)}
+.cmd-tag .new{color:var(--accent-ink);border:1px solid var(--accent-edge);border-radius:5px;padding:0 6px;margin-left:8px;letter-spacing:.1em}
+.copy{font-family:var(--mono);font-size:11.5px;color:var(--code-muted);background:transparent;border:1px solid var(--code-line);border-radius:6px;padding:3px 10px;cursor:pointer;transition:.15s}
+.copy:hover{color:var(--code-ink);border-color:#403c37}
+.copy.ok{color:#d9955f;border-color:#4a382c}
+.cmd pre{margin:0;padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:13.5px;line-height:1.72;color:var(--code-ink)}
+.cmd .p{color:var(--prompt);user-select:none;-webkit-user-select:none;margin-right:.55em}
+.cmd .c{color:var(--comment)}
+code.k{font-family:var(--mono);font-size:.88em;background:var(--accent-soft);color:var(--accent-ink);padding:.08em .38em;border-radius:5px;white-space:normal;overflow-wrap:anywhere}
+p{margin:.7em 0}
+.note{font-size:.9rem;color:var(--muted)}
+a{color:var(--accent-ink)}
+ul.reqs{padding-left:0;list-style:none;margin:12px 0}
+ul.reqs li{position:relative;padding-left:20px;margin:.55em 0;color:var(--muted)}
+ul.reqs li::before{content:"";position:absolute;left:2px;top:.62em;width:6px;height:6px;background:var(--accent);transform:rotate(45deg)}
+ul.reqs li b{color:var(--ink);font-weight:600}
+.log{border-left:2px solid var(--line);padding-left:22px;margin:8px 0 0 2px}
+.log .item{margin:0 0 18px}
+.log .v{font-family:var(--mono);font-weight:600;color:var(--ink);font-size:.94rem}
+.log .item p{margin:.3em 0 0;font-size:.92rem;color:var(--muted)}
+.tag-new{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink);border:1px solid var(--accent-edge);background:var(--accent-soft);border-radius:5px;padding:1px 6px;margin-left:.5em;vertical-align:middle}
+footer{border-top:1px solid var(--line);margin-top:54px;padding:26px 0 64px}
+.foot-links{display:flex;flex-wrap:wrap;gap:6px 20px;margin:0 0 18px}
+.foot-links a{font-family:var(--mono);font-size:12.5px;color:var(--muted);text-decoration:none}
+.foot-links a:hover{color:var(--accent-ink)}
+.foot-row{display:flex;flex-wrap:wrap;gap:14px 28px;align-items:center;justify-content:space-between}
+.sibling{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+.sibling a{text-decoration:none;color:var(--accent-ink)}
+.foot-note{font-family:var(--mono);font-size:12px;color:var(--faint)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="topbar">
+    <a class="brand" href="/"><b>agilekit</b> / downloads</a>
+    <span class="toplinks"><a href="/nexa-agent-dl/">nexa-agent</a><a href="/dwb-dl/">dwb</a></span>
+  </nav>
+
+  <header class="hero">
+    <p class="eyebrow">NEXA CLI</p>
+    <h1>nexa<span class="pill"><!--nexa:version-->v3.7.1<!--/nexa:version--></span></h1>
+    <p class="lede">A self-contained AI coding agent for <b>Japanese SI delivery</b>. Scaffolds the full six-phase SDLC, drives requirement and design generation, validation gates, and a FARE knowledge base. One tarball - no monorepo, no registry auth.</p>
+    <div class="phases">
+      <span>intake</span><span class="arw">→</span><span>RD</span><span class="arw">→</span><span>BD</span><span class="arw">→</span><span>DD</span><span class="arw">→</span><span>coding</span><span class="arw">→</span><span>delivery</span>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="n">01</span> Install</h2>
+    <p class="sub">One line. The installer checks Node, resolves the latest version, and installs globally.</p>
+    <div class="cmd">
+      <div class="cmd-head"><span class="cmd-tag">install.sh</span><button class="copy" type="button">Copy</button></div>
+      <pre><code><span class="p">$</span>curl -fsSL https://downloads.agilekit.cc/nexa-dl/install.sh | bash</code></pre>
+    </div>
+    <p class="note">Or install the tarball directly with npm:</p>
+    <div class="cmd">
+      <div class="cmd-head"><span class="cmd-tag">npm</span><button class="copy" type="button">Copy</button></div>
+      <pre><code><span class="p">$</span>npm i -g <!--nexa:tgz-url-->https://dl.agilekit.cc/nexa-3.7.1.tgz<!--/nexa:tgz-url--></code></pre>
+    </div>
+    <p>Then verify:</p>
+    <div class="cmd">
+      <div class="cmd-head"><span class="cmd-tag">shell</span><button class="copy" type="button">Copy</button></div>
+      <pre><code><span class="p">$</span>nexa --version &amp;&amp; nexa doctor</code></pre>
+    </div>
+    <p class="note">Every native addon (better-sqlite3, koffi, …) ships prebuilt and bundled, and install scripts are stripped at pack time - no compiler, no network build step, no <code class="k">--ignore-scripts</code>.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">02</span> Activate</h2>
+    <p class="sub">Activate the signed <code class="k">.license</code> file supplied by your NEXA maintainer. Keep it private.</p>
+    <div class="cmd hl">
+      <div class="cmd-head"><span class="cmd-tag">license file</span><button class="copy" type="button">Copy</button></div>
+      <pre><code><span class="p">$</span>LICENSE_FILE="$HOME/Downloads/nexa.license"
+<span class="p">$</span>chmod 600 "$LICENSE_FILE"
+<span class="p">$</span>if (
+<span class="p">$</span>  set +x
+<span class="p">$</span>  NEXA_LICENSE_KEY="$(tr -d '\r\n' &lt; "$LICENSE_FILE")"
+<span class="p">$</span>  nexa license activate "$NEXA_LICENSE_KEY"
+<span class="p">$</span>); then
+<span class="p">$</span>  nexa license status
+<span class="p">$</span>else
+<span class="p">$</span>  activation_status=$?
+<span class="p">$</span>  exit "$activation_status"
+<span class="p">$</span>fi</code></pre>
+    </div>
+    <p>Confirm <code class="k">Revalidation: ✓ valid</code> and <code class="k">Revocation: ✓ not revoked</code>. If status says <code class="k">offline - using cached verdict</code>, local signature and expiry checks passed, but current revocation status was not confirmed. Restore network access and check again.</p>
+    <p class="note">Do not commit, upload, paste, or attach the license to tickets or logs. Direct activation with <code class="k">nexa license activate 'NEXA-&lt;key&gt;'</code> is supported, but can save the key in shell history. Prefer the file-based procedure above.</p>
+    <p class="note">Normal upgrades and reinstalls under the same user and <code class="k">HOME</code> preserve <code class="k">~/.nexa/license.json</code>. Licenses signed by the verifier retired before alpha.22 must still be reissued and activated again. On a new machine or under a different <code class="k">HOME</code>, securely transfer the original <code class="k">.license</code> file and activate again. Expired licenses stop immediately. Revoked licenses stop after the revoked verdict is fetched and cached; while offline, NEXA uses the last cached revocation verdict.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">03</span> Update</h2>
+    <p class="sub">Already installed? Upgrade in place with the built-in self-updater.</p>
+    <div class="cmd hl">
+      <div class="cmd-head"><span class="cmd-tag">nexa upgrade <span class="new">new</span></span><button class="copy" type="button">Copy</button></div>
+      <pre><code><span class="p">$</span>nexa upgrade              <span class="c"># fetch latest, install over the current one</span></code></pre>
+    </div>
+    <div class="cmd">
+      <div class="cmd-head"><span class="cmd-tag">variants</span><button class="copy" type="button">Copy</button></div>
+      <pre><code><span class="p">$</span>nexa upgrade --check                   <span class="c"># current vs latest, no install</span>
+<span class="p">$</span>nexa upgrade --version 3.2.0-alpha.11  <span class="c"># pin / roll back</span>
+<span class="p">$</span>nexa upgrade --dry-run                 <span class="c"># print the install command only</span></code></pre>
+    </div>
+    <p class="note">No global command yet (on an older build)? Re-running the installer is equivalent and idempotent: <code class="k">curl -fsSL https://downloads.agilekit.cc/nexa-dl/install.sh | bash</code>.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">04</span> Quick start</h2>
+    <p class="sub">Scaffold and inspect a project. Full greenfield sequence in <a href="QUICKSTART.md">QUICKSTART.md</a>.</p>
+    <div class="cmd">
+      <div class="cmd-head"><span class="cmd-tag">shell</span><button class="copy" type="button">Copy</button></div>
+      <pre><code><span class="p">$</span>mkdir my-project &amp;&amp; cd my-project
+<span class="p">$</span>nexa init        <span class="c"># scaffold 6-phase folders + .claude + .nexa + config</span>
+<span class="p">$</span>nexa status      <span class="c"># workspace / kb / doc / gate health</span>
+<span class="p">$</span>nexa scan all    <span class="c"># build the FARE knowledge base</span>
+<span class="p">$</span>nexa tui         <span class="c"># launch the coding agent</span></code></pre>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">05</span> Requirements</h2>
+    <ul class="reqs">
+      <li><b>Node 22.19+</b> and npm - the installer checks and stops with a clear message otherwise.</li>
+      <!--nexa:natives-->
+      <li><b>macOS or Linux.</b> A prebuilt <code class="k">better-sqlite3</code> is bundled for the knowledge base (<code class="k">nexa kb</code> / <code class="k">nexa scan</code>). <code class="k">init</code>, <code class="k">status</code>, <code class="k">doctor</code> work regardless.</li>
+      <li><b>Mismatched Node ABI</b> (e.g. Node 24/26) and a native-module error from <code class="k">nexa kb</code>? Rebuild the bundled engine once - source ships too, so it works offline:
+        <div class="cmd">
+          <div class="cmd-head"><span class="cmd-tag">only if kb reports a native error</span><button class="copy" type="button">Copy</button></div>
+          <pre><code><span class="p">$</span>npm rebuild better-sqlite3 --prefix "$(npm root -g)/@fabbi-product-nexa/nexa-cli"</code></pre>
+        </div>
+      </li>
+      <!--/nexa:natives-->
+      <li>No GitHub or npm registry auth - all 15 internal packages are bundled into the tarball.</li>
+      <li><b>No Node on the machine?</b> <a href="/nexa-agent-dl/">NEXA Agent</a> is the same NEXA with its own Node runtime: one installer for macOS, Linux and Windows, no npm.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">06</span> Changelog</h2>
+    <div class="log">
+<!--nexa:changelog-->
+      <div class="item">
+        <span class="v">3.7.1</span><span class="tag-new">latest</span>
+        <p>First curl-install build of the 3.x line. Adds <code class="k">nexa capabilities</code> (host contract 1.1: MCP servers nexa-kb with 8 tools and nexa-fare with 11, exit codes, tier policy) for hosts such as SYNCA, the Pi TUI with the governed harness runtime, headless print mode for CI, an MCP client (Streamable HTTP, legacy SSE, OAuth), <code class="k">/plan</code> read-only mode and <code class="k">/import claude|codex</code>. NEXA is proprietary software of Fabbi Holdings; <code class="k">scan</code>, <code class="k">rd</code> and other Pro commands need a license (<code class="k">nexa license status</code>). Full notes: CHANGELOG 3.3.0 to 3.7.1.</p>
+      </div>
+      <div class="item">
+        <span class="v">3.2.0-alpha.24</span>
+        <p>Adds <code class="k">nexa kb mcp-serve</code> (NEXA KB over MCP, 8 tools) and separates the nexa-kb and FARE scan scopes. Help text now says which KB each command builds. On Windows, install with <code class="k">npm i -g --ignore-scripts</code> and fetch the SQLite addon with <code class="k">npx prebuild-install</code> (see QUICKSTART).</p>
+      </div>
+      <div class="item">
+        <span class="v">3.2.0-alpha.23</span>
+        <p>Fixes UI-reference extraction: the OpenPencil runner is now resolved through the launcher symlink, so <code class="k">.fig</code> prototype extraction no longer falls back to the Node shim and fails with <code class="k">Bun is not defined</code>. No change to licensing or the CLI surface.</p>
+      </div>
+      <div class="item">
+        <span class="v">3.2.0-alpha.22</span>
+        <p>Rotates the production license verifier, adds signed license activation and status checks, and preserves in-place upgrades through <code class="k">nexa upgrade</code>. Licenses issued for the retired verifier must be reissued before use on alpha.22 or later.</p>
+      </div>
+      <div class="item">
+        <span class="v">3.2.0-alpha.12</span>
+        <p>Adds the <code class="k">nexa upgrade</code> self-update command - resolves the latest published version and installs it in place, with <code class="k">--check</code>, <code class="k">--version</code>, and <code class="k">--dry-run</code>.</p>
+      </div>
+      <div class="item">
+        <span class="v">3.2.0-alpha.11</span>
+        <p>Plain <code class="k">npm i -g</code> works with no flags (install scripts stripped from all bundled native deps); tarball served from R2 (<code class="k">dl.agilekit.cc</code>). <code class="k">better-sqlite3</code> ships prebuilt <em>and</em> as rebuildable source, so a mismatched Node ABI recovers offline with one <code class="k">npm rebuild</code>.</p>
+      </div>
+      <div class="item">
+        <span class="v">3.2.0-alpha.10</span>
+        <p>First self-contained, curl-installable release. Bundles the full workspace (cli + 15 <code class="k">@fabbi-product-nexa/*</code> packages), builtin templates and skills, and a prebuilt <code class="k">better-sqlite3</code>.</p>
+      </div>
+<!--/nexa:changelog-->
+    </div>
+  </section>
+
+  <footer>
+    <div class="foot-links">
+      <a href="QUICKSTART.md">QUICKSTART.md</a>
+      <a href="manifest.json">manifest.json</a>
+      <a href="versions.json">versions.json</a>
+      <a href="verify.sh">verify.sh</a>
+    </div>
+    <div class="foot-row">
+      <span class="sibling">Sibling tools → <a href="/nexa-agent-dl/">NEXA Agent (no Node needed)</a> · <a href="/dwb-dl/">dwb - Desktop Worker Bridge</a></span>
+      <span class="foot-note">Uninstall: npm rm -g @fabbi-product-nexa/nexa-cli</span>
+    </div>
+  </footer>
+
+</div>
+<script>
+document.querySelectorAll('.copy').forEach(function(b){
+  b.addEventListener('click',function(){
+    var pre=b.closest('.cmd').querySelector('pre');
+    var text=pre.innerText.replace(/^\$\s?/gm,'').replace(/[ \t]+#.*$/gm,'').replace(/[ \t]+$/gm,'').trim();
+    (navigator.clipboard&&navigator.clipboard.writeText(text)||Promise.reject()).then(function(){
+      b.textContent='Copied';b.classList.add('ok');
+      setTimeout(function(){b.textContent='Copy';b.classList.remove('ok')},1400);
+    }).catch(function(){});
+  });
+});
+</script>
+</body>
+</html>

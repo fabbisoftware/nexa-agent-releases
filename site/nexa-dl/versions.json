@@ -1,0 +1,97 @@
+{
+  "latest": "3.7.1",
+  "url": "https://dl.agilekit.cc/nexa-3.7.1.tgz",
+  "_note": "3.2.0-alpha.13 and .14 were release-skew builds (cut from non-master commits, #198/#199) and are intentionally NOT in this dist — .12 -> .15 is the supported jump. .15 is the first build produced through the publish-guard (#199) + bundle-integrity gate (#256); .16 follows the same guarded flow.",
+  "versions": [
+    {
+      "version": "3.7.1",
+      "url": "https://dl.agilekit.cc/nexa-3.7.1.tgz",
+      "sha256": "0fcac5dbef68a0aa4ecaa9013c993a2905eacad52ed9eaebbd4250e0f290044b",
+      "date": "2026-10-18"
+    },
+    {
+      "version": "3.2.0-alpha.24",
+      "url": "https://dl.agilekit.cc/nexa-3.2.0-alpha.24.tgz",
+      "sha256": "afcfe9a7a4b70edca96365cb614de71510e707a5360352f1f573d37cf6f3b11d",
+      "date": "2026-10-11"
+    },
+    {
+      "version": "3.2.0-alpha.23.1",
+      "url": "https://dl.agilekit.cc/nexa-3.2.0-alpha.23.1.tgz",
+      "sha256": "db23a4e88b8d3a7a3cd0e87c8e1f923455d19efda689ac385b5d6974ae3673af",
+      "date": "2026-08-26"
+    },
+    {
+      "version": "3.2.0-alpha.23",
+      "url": "https://dl.agilekit.cc/nexa-3.2.0-alpha.23.tgz",
+      "sha256": "91f1893054c652280c285fe1d96e6efc756d6e7685553a8da05e25d7adcbd688",
+      "date": "2026-07-30"
+    },
+    {
+      "version": "3.2.0-alpha.22",
+      "url": "https://dl.agilekit.cc/nexa-3.2.0-alpha.22.tgz",
+      "sha256": "8e23f419950d0aaeaffa88f6636c09bb9e4a6f41aca74e61c5660b41a676e474",
+      "date": "2026-07-22"
+    },
+    {
+      "version": "3.2.0-alpha.21",
+      "url": "https://dl.agilekit.cc/nexa-3.2.0-alpha.21.tgz",
+      "sha256": "d7a16e72e17658cc8f3a0aa44985830c155a59497a2e78647578a93b2c698b13",
+      "date": "2026-07-15"
+    },
+    {
+      "version": "3.2.0-alpha.20",
+      "url": "https://dl.agilekit.cc/nexa-3.2.0-alpha.20.tgz",
+      "sha256": "0e8424bfb1b9d27c993eb9e094717701b0ff7a43df13c76f5900ec4c12084bfb",
+      "date": "2026-07-15"
+    },
+    {
+      "version": "3.2.0-alpha.19",
+      "url": "https://dl.agilekit.cc/nexa-3.2.0-alpha.19.tgz",
+      "sha256": "acf0202b0b4351ef1bc19d13af0104976e2cf7ee357415ea3d7de248da4b2bb6",
+      "date": "2026-07-15"
+    },
+    {
+      "version": "3.2.0-alpha.18",
+      "url": "https://dl.agilekit.cc/nexa-3.2.0-alpha.18.tgz",
+      "sha256": "aac377377934400e1d241b2ce649516b3153511725958f4f9544b894f71a2e36",
+      "date": "2026-07-15"
+    },
+    {
+      "version": "3.2.0-alpha.17",
+      "url": "https://dl.agilekit.cc/nexa-3.2.0-alpha.17.tgz",
+      "sha256": "9492b72a982c0ed619293ef806861112daadc1f42b7a1a26527701cdae938931",
+      "date": "2026-07-15"
+    },
+    {
+      "version": "3.2.0-alpha.16",
+      "url": "https://dl.agilekit.cc/nexa-3.2.0-alpha.16.tgz",
+      "sha256": "62fb94523359dca4104cfefb4a60e60589daf5f29b0af39339db8e0eb0b3156c",
+      "date": "2026-07-13"
+    },
+    {
+      "version": "3.2.0-alpha.15",
+      "url": "https://dl.agilekit.cc/nexa-3.2.0-alpha.15.tgz",
+      "sha256": "82947198611b890122432d0860acabbb613f1a9fbdc3ce8ef17ceb81c7721eda",
+      "date": "2026-07-12"
+    },
+    {
+      "version": "3.2.0-alpha.12",
+      "url": "https://dl.agilekit.cc/nexa-3.2.0-alpha.12.tgz",
+      "sha256": "747fbd04b1008e578152a7eb4a2338b3e353acb0250b78c9442385579ca508de",
+      "date": "2026-07-10"
+    },
+    {
+      "version": "3.2.0-alpha.11",
+      "url": "https://dl.agilekit.cc/nexa-3.2.0-alpha.11.tgz",
+      "sha256": "308db438a81cb54c50bf75f93be93897b2ed87fd2e2597130bf59679a52bfa4f",
+      "date": "2026-07-10"
+    },
+    {
+      "version": "3.2.0-alpha.10",
+      "url": "https://dl.agilekit.cc/nexa-3.2.0-alpha.10.tgz",
+      "sha256": "f288e580eae66aa593a77ab3b16f35c3f57abac40c0f556f0f1cae1f44885bb1",
+      "date": "2026-07-10"
+    }
+  ]
+}

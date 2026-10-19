@@ -1,0 +1,171 @@
+name: agent-release
+
+# Builds the NEXA Agent archives for one staged version and smoke-tests each on a
+# real runner of its platform. A staging branch (staging/v<version>, made by
+# /publish-agent from main) holds staging/staging.json and the NEXA bundle
+# staging/nexa-<version>.tgz. Unless staging.json says dry_run, the result is a DRAFT
+# release v<version> plus the rendered site/nexa-agent-dl on main; the owner's local
+# /deploy publishes the draft. A dry run deletes its staging branch when done.
+
+on:
+  push:
+    branches: ["staging/v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version; branch staging/v<version> must exist"
+        required: true
+
+concurrency:
+  group: agent-release-${{ inputs.version || github.ref_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  plan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.read.outputs.version }}
+      agent: ${{ steps.read.outputs.agent }}
+      cli: ${{ steps.read.outputs.cli }}
+      dry_run: ${{ steps.read.outputs.dry_run }}
+      node: ${{ steps.read.outputs.node }}
+      ref: ${{ steps.read.outputs.ref }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.version && format('staging/v{0}', inputs.version) || github.ref }}
+      - id: read
+        run: |
+          node -e '
+            const s = require("./staging/staging.json");
+            const ref = process.env.REF;
+            if (ref !== `staging/v${s.version}`) throw new Error(`branch ${ref} does not match staging.json version ${s.version}`);
+            const out = [`version=${s.version}`, `agent=${Boolean(s.agent)}`, `cli=${Boolean(s.cli)}`, `dry_run=${Boolean(s.dry_run)}`, `node=${s.node ?? ""}`, `ref=${ref}`];
+            require("fs").appendFileSync(process.env.GITHUB_OUTPUT, out.join("\n") + "\n");
+            console.log(out.join("  "));
+          '
+        env:
+          REF: ${{ inputs.version && format('staging/v{0}', inputs.version) || github.ref_name }}
+
+  assemble:
+    needs: plan
+    if: needs.plan.outputs.agent == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Bundle matches staging.json
+        run: |
+          node -e '
+            const s = require("./staging/staging.json");
+            const file = `staging/${s.bundle.file}`;
+            const got = require("crypto").createHash("sha256").update(require("fs").readFileSync(file)).digest("hex");
+            if (got !== s.bundle.sha256) throw new Error(`${file}: sha256 ${got} != ${s.bundle.sha256}`);
+            console.log(`${file} ${got}`);
+          '
+      - name: Assemble
+        run: |
+          node scripts/assemble-agent.mjs --bundle "staging/nexa-${{ needs.plan.outputs.version }}.tgz" --out dist \
+            --version "${{ needs.plan.outputs.version }}" ${{ needs.plan.outputs.node && format('--node {0}', needs.plan.outputs.node) || '' }} --cache "$RUNNER_TEMP/node-cache"
+          rm -rf dist/.cache
+          ls -la dist && cat dist/SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: agent-dist
+          path: dist/
+          retention-days: 7
+
+  smoke:
+    needs: [plan, assemble]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, ubuntu-24.04-arm, macos-15, macos-15-intel, windows-2025]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.ref }}
+          sparse-checkout: |
+            scripts
+            site
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/download-artifact@v4
+        with:
+          name: agent-dist
+          path: dist
+      - name: Install with the real installer and run NEXA
+        run: node scripts/smoke-agent.mjs --dist dist --version "${{ needs.plan.outputs.version }}"
+
+  release:
+    needs: [plan, assemble, smoke]
+    if: needs.plan.outputs.dry_run != 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      VERSION: ${{ needs.plan.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/download-artifact@v4
+        with:
+          name: agent-dist
+          path: dist
+      - name: Notes from staging.json
+        run: |
+          git fetch -q origin "${{ needs.plan.outputs.ref }}"
+          git show "FETCH_HEAD:staging/staging.json" > "$RUNNER_TEMP/staging.json"
+          node -e 'const s=require(process.argv[1]); require("fs").writeFileSync(process.argv[2], (s.notes || `NEXA Agent ${s.version}.`) + "\n")' "$RUNNER_TEMP/staging.json" "$RUNNER_TEMP/notes.md"
+          cat "$RUNNER_TEMP/notes.md"
+      - name: Draft release v${{ env.VERSION }}
+        run: |
+          if state=$(gh release view "v$VERSION" --json isDraft --jq .isDraft 2>/dev/null); then
+            if [ "$state" != "true" ]; then echo "::error::release v$VERSION is already published; a published version is never rebuilt"; exit 1; fi
+            gh release delete "v$VERSION" --yes
+          fi
+          node -e '
+            const a = require("./dist/assets.json");
+            const lines = a.assets.map((x) => `| ${x.name} | ${(x.size / 1048576).toFixed(1)} MB | \`${x.sha256}\` |`);
+            const body = require("fs").readFileSync(process.argv[1], "utf8") +
+              `\nInstall: https://downloads.agilekit.cc/nexa-agent-dl/\n\nNode ${a.node} · bundle sha256 \`${a.bundle_sha256}\`\n\n| File | Size | sha256 |\n|---|---|---|\n` + lines.join("\n") + "\n";
+            require("fs").writeFileSync(process.argv[2], body);
+          ' "$RUNNER_TEMP/notes.md" "$RUNNER_TEMP/release.md"
+          gh release create "v$VERSION" --draft --target main --title "NEXA Agent $VERSION" --notes-file "$RUNNER_TEMP/release.md" \
+            dist/*.tar.gz dist/*.zip dist/SHA256SUMS
+      - name: Render site/nexa-agent-dl on main
+        run: |
+          node scripts/render-site.mjs agent --version "$VERSION" --dist dist --notes-file "$RUNNER_TEMP/notes.md" --node "$(node -p 'require("./dist/assets.json").node')"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add site/nexa-agent-dl
+          git commit -m "nexa-agent-dl: v$VERSION (draft release, published by /deploy)"
+          for i in 1 2 3; do git push origin HEAD:main && exit 0; git pull --rebase -q origin main; done
+          exit 1
+
+  cleanup-dry-run:
+    needs: [plan, smoke]
+    if: always() && needs.plan.outputs.dry_run == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Delete the dry-run staging branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X DELETE "repos/${{ github.repository }}/git/refs/heads/${{ needs.plan.outputs.ref }}"

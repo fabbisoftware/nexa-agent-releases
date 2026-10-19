@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NEXA Agent Downloads</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="NEXA Agent: NEXA with its own Node runtime. One-line installers for macOS, Linux and Windows, checksum-verified builds, every release.">
+<style>
+/* Layout: one 812px reading column, sibling of /nexa-dl/ and /dwb-dl/ (same tokens, same rhythm). */
+*{box-sizing:border-box}
+:root{
+  --bg:#f6f4ef; --raised:#fffdfa; --ink:#181714; --muted:#6d6960; --faint:#a29d93;
+  --line:#e5e0d6; --code-bg:#1b1a17; --code-ink:#eae6dd; --code-muted:#8b877e; --code-line:#2c2a26;
+  --accent:#c0532e; --accent-ink:#9e4020; --accent-soft:rgba(192,83,46,.10); --accent-edge:rgba(192,83,46,.26);
+  --prompt:#b0785a; --comment:#c9a06a; --ok:#3f7d4e; --copied:#d9955f; --copied-edge:#4a382c; --copy-hover:#403c37;
+  --radius:10px;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121110; --raised:#1a1917; --ink:#ece8df; --muted:#9c978d; --faint:#6f6a61;
+  --line:#2a2724; --code-bg:#0e0d0c; --code-ink:#e6e2d9; --code-muted:#847f76; --code-line:#242220;
+  --accent:#e0895f; --accent-ink:#eaa07e; --accent-soft:rgba(224,137,95,.14); --accent-edge:rgba(224,137,95,.30);
+  --prompt:#b98a68; --comment:#c7a86a; --ok:#7fbf8c;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#121110; --raised:#1a1917; --ink:#ece8df; --muted:#9c978d; --faint:#6f6a61;
+  --line:#2a2724; --code-bg:#0e0d0c; --code-ink:#e6e2d9; --code-muted:#847f76; --code-line:#242220;
+  --accent:#e0895f; --accent-ink:#eaa07e; --accent-soft:rgba(224,137,95,.14); --accent-edge:rgba(224,137,95,.30);
+  --prompt:#b98a68; --comment:#c7a86a; --ok:#7fbf8c;
+  color-scheme:dark;
+}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+.wrap{max-width:812px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+@media (min-width:640px){.wrap{padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px))}}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:22px;font-family:var(--mono);font-size:12.5px;letter-spacing:.02em;color:var(--muted)}
+.topbar nav{display:flex;gap:16px}
+.brand{color:var(--muted);text-decoration:none}
+.brand b{color:var(--ink);font-weight:600}
+.topbar a{color:var(--muted);text-decoration:none;transition:color .15s}
+.topbar a:hover,.topbar a:focus-visible{color:var(--accent-ink)}
+header.hero{padding:60px 0 30px;border-bottom:1px solid var(--line);margin-bottom:46px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-ink);margin:0 0 16px}
+h1{font-size:clamp(2.2rem,7vw,3.4rem);line-height:1.05;letter-spacing:-.03em;font-weight:680;margin:0 0 .35em;font-family:var(--mono);text-wrap:balance}
+.pill{display:inline-block;margin-left:.55rem;font-family:var(--mono);font-size:.8rem;font-weight:600;color:var(--accent-ink);background:var(--accent-soft);border:1px solid var(--accent-edge);padding:3px 10px;border-radius:999px;transform:translateY(-.4em);font-variant-numeric:tabular-nums}
+.lede{font-size:1.18rem;line-height:1.55;color:var(--muted);max-width:62ch;margin:.1em 0 0}
+.lede b{color:var(--ink);font-weight:600}
+.facts{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 0;padding:0;list-style:none;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.facts li{border:1px solid var(--line);border-radius:6px;padding:3px 9px;background:var(--raised)}
+section{margin:0 0 44px;scroll-margin-top:20px}
+h2{font-size:.9rem;font-family:var(--mono);letter-spacing:.01em;font-weight:600;color:var(--ink);margin:0 0 4px;display:flex;align-items:baseline;gap:.55rem}
+h2 .n{color:var(--faint);font-weight:500}
+.sub{color:var(--muted);font-size:.96rem;margin:.15em 0 14px;max-width:66ch}
+
+/* OS switcher */
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 0}
+.tab{font-family:var(--mono);font-size:12.5px;color:var(--muted);background:var(--raised);border:1px solid var(--line);border-radius:7px;padding:5px 12px;cursor:pointer;transition:color .15s,border-color .15s}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--accent-ink);border-color:var(--accent-edge);background:var(--accent-soft)}
+.tab:focus-visible,.copy:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tab .here{font-size:10px;letter-spacing:.08em;text-transform:uppercase;margin-left:6px;color:var(--faint)}
+
+.cmd{background:var(--code-bg);border:1px solid var(--code-line);border-radius:var(--radius);margin:12px 0;overflow:hidden;min-width:0}
+.cmd.hl{border-color:var(--accent-edge);box-shadow:0 0 0 3px var(--accent-soft)}
+.cmd-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 10px 7px 14px;border-bottom:1px solid var(--code-line)}
+.cmd-tag{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--code-muted)}
+.copy{font-family:var(--mono);font-size:11.5px;color:var(--code-muted);background:transparent;border:1px solid var(--code-line);border-radius:6px;padding:3px 10px;cursor:pointer;transition:.15s}
+.copy:hover{color:var(--code-ink);border-color:var(--copy-hover)}
+.copy.ok{color:var(--copied);border-color:var(--copied-edge)}
+.cmd pre{margin:0;padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:13.5px;line-height:1.72;color:var(--code-ink)}
+.cmd .p{color:var(--prompt);user-select:none;-webkit-user-select:none;margin-right:.55em}
+.cmd .c{color:var(--comment)}
+code.k{font-family:var(--mono);font-size:.88em;background:var(--accent-soft);color:var(--accent-ink);padding:.08em .38em;border-radius:5px;overflow-wrap:anywhere}
+p{margin:.7em 0}
+.note{font-size:.9rem;color:var(--muted);max-width:68ch}
+a{color:var(--accent-ink)}
+
+/* downloads table */
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--raised);margin:12px 0}
+table{width:100%;border-collapse:collapse;font-size:.92rem;min-width:520px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:baseline}
+tr:last-child td{border-bottom:0}
+th{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);font-weight:500}
+td.file a{font-family:var(--mono);font-size:.86rem;text-decoration:none;overflow-wrap:anywhere}
+td.file a:hover{text-decoration:underline}
+td.size{font-family:var(--mono);font-size:.84rem;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+td.plat b{font-weight:600}
+td.plat span{color:var(--muted);font-size:.86rem}
+tr.mine td{background:var(--accent-soft)}
+tr.mine td.plat b::after{content:"this device";margin-left:8px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink);border:1px solid var(--accent-edge);border-radius:5px;padding:0 5px;vertical-align:1px}
+
+ul.reqs{padding-left:0;list-style:none;margin:12px 0}
+ul.reqs li{position:relative;padding-left:20px;margin:.55em 0;color:var(--muted)}
+ul.reqs li::before{content:"";position:absolute;left:2px;top:.62em;width:6px;height:6px;background:var(--accent);transform:rotate(45deg)}
+ul.reqs li b{color:var(--ink);font-weight:600}
+
+.log{border-left:2px solid var(--line);padding-left:22px;margin:8px 0 0 2px}
+.log .item{margin:0 0 18px}
+.log .v{font-family:var(--mono);font-weight:600;color:var(--ink);font-size:.94rem;text-decoration:none}
+.log .v:hover{text-decoration:underline}
+.log .d{font-family:var(--mono);font-size:.8rem;color:var(--faint);margin-left:.6em;font-variant-numeric:tabular-nums}
+.log .item p{margin:.3em 0 0;font-size:.92rem;color:var(--muted);white-space:pre-line;max-width:68ch}
+.tag-new{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink);border:1px solid var(--accent-edge);background:var(--accent-soft);border-radius:5px;padding:1px 6px;margin-left:.5em;vertical-align:middle}
+.tag-pre{color:var(--muted);border-color:var(--line);background:transparent}
+
+footer{border-top:1px solid var(--line);margin-top:54px;padding:26px 0 64px}
+.foot-links{display:flex;flex-wrap:wrap;gap:6px 20px;margin:0 0 18px}
+.foot-links a{font-family:var(--mono);font-size:12.5px;color:var(--muted);text-decoration:none}
+.foot-links a:hover{color:var(--accent-ink)}
+.foot-row{display:flex;flex-wrap:wrap;gap:14px 28px;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+.foot-row a{color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="topbar">
+  <a class="brand" href="/">agilekit / <b>downloads</b></a>
+  <nav><a href="/nexa-dl/">nexa cli</a><a href="/dwb-dl/">dwb</a></nav>
+</div>
+
+<header class="hero">
+  <p class="eyebrow">NEXA Agent</p>
+  <h1>nexa-agent<span class="pill"><!--nexa:version-->latest<!--/nexa:version--></span></h1>
+  <p class="lede"><b>NEXA</b> with its own Node runtime: the same CLI and TUI as the npm package, for machines without Node or npm. One command installs <b>nexa-agent</b> and <b>nexa</b> into your home folder with no admin rights, and every download is checked against the release's <b>SHA-256</b> list before anything is written.</p>
+  <ul class="facts">
+    <li>macOS · Apple silicon &amp; Intel</li>
+    <li>Linux · x64 &amp; arm64</li>
+    <li>Windows · x64 (preview)</li>
+  </ul>
+</header>
+
+<section id="install">
+  <h2><span class="n">01</span>Install</h2>
+  <p class="sub">Pick your system. The installer detects the CPU, downloads the matching build, verifies its checksum and puts <code class="k">nexa-agent</code> and <code class="k">nexa</code> on your PATH.</p>
+
+  <div class="tabs" role="tablist" aria-label="Operating system">
+    <button class="tab" role="tab" id="tab-unix" aria-controls="pane-unix" aria-selected="true">macOS / Linux</button>
+    <button class="tab" role="tab" id="tab-win" aria-controls="pane-win" aria-selected="false">Windows</button>
+  </div>
+
+  <div id="pane-unix" role="tabpanel" aria-labelledby="tab-unix">
+    <div class="cmd hl">
+      <div class="cmd-head"><span class="cmd-tag">terminal</span><button class="copy" type="button">Copy</button></div>
+      <pre><span class="p">$</span>curl -fsSL https://downloads.agilekit.cc/nexa-agent-dl/install.sh | bash</pre>
+    </div>
+    <p class="note">Installs to <code class="k">~/.nexa-agent</code> and adds its <code class="k">bin</code> folder to <code class="k">~/.zshrc</code> or <code class="k">~/.bashrc</code>. Add <code class="k">--no-modify-path</code> after <code class="k">bash -s --</code> to leave your profile alone.</p>
+  </div>
+
+  <div id="pane-win" role="tabpanel" aria-labelledby="tab-win" hidden>
+    <div class="cmd hl">
+      <div class="cmd-head"><span class="cmd-tag">powershell</span><button class="copy" type="button">Copy</button></div>
+      <pre><span class="p">PS&gt;</span>irm https://downloads.agilekit.cc/nexa-agent-dl/install.ps1 | iex</pre>
+    </div>
+    <p class="note">Installs to <code class="k">%LOCALAPPDATA%\nexa-agent</code> and adds it to your user PATH. No administrator prompt. Open a new terminal afterwards. Windows is a preview: the TUI is not supported there yet.</p>
+  </div>
+
+  <p>Then check it runs:</p>
+  <div class="cmd">
+    <div class="cmd-head"><span class="cmd-tag">shell</span><button class="copy" type="button">Copy</button></div>
+    <pre><span class="p">$</span>nexa-agent --version
+<span class="p">$</span>nexa doctor</pre>
+  </div>
+  <p class="note"><code class="k">nexa</code> is the same program, so every command in the <a href="/nexa-dl/QUICKSTART.md">NEXA quick start</a> works unchanged. If the npm-based NEXA CLI is installed as well, the <code class="k">nexa</code> whose folder comes first in PATH runs.</p>
+</section>
+
+<section id="activate">
+  <h2><span class="n">02</span>Activate</h2>
+  <p class="sub">Activate the signed <code class="k">.license</code> file supplied by your NEXA maintainer. Keep it private.</p>
+  <div class="cmd">
+    <div class="cmd-head"><span class="cmd-tag">license file</span><button class="copy" type="button">Copy</button></div>
+    <pre><span class="p">$</span>LICENSE_FILE="$HOME/Downloads/nexa.license"
+<span class="p">$</span>chmod 600 "$LICENSE_FILE"
+<span class="p">$</span>nexa license activate "$(tr -d '\r\n' &lt; "$LICENSE_FILE")" &amp;&amp; nexa license status</pre>
+  </div>
+  <p class="note">Do not commit, upload, paste, or attach the license to tickets or logs. The license lifecycle (revalidation, offline verdicts, moving to a new machine) is the same as for the <a href="/nexa-dl/">NEXA CLI</a>.</p>
+</section>
+
+<section id="download">
+  <h2><span class="n">03</span>Direct download</h2>
+  <p class="sub">For offline machines or a managed rollout. The files belong to the release named at the top; <code class="k">SHA256SUMS</code> lists the checksum of every file.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Platform</th><th>File</th><th>Size</th></tr></thead>
+      <tbody id="asset-rows"><!--nexa:assets-->
+        <tr data-os="mac"><td class="plat"><b>macOS</b> <span>Apple silicon</span></td><td class="file"><a href="https://github.com/fabbisoftware/nexa-agent-releases/releases/latest/download/nexa-agent-darwin-arm64.tar.gz">nexa-agent-darwin-arm64.tar.gz</a></td><td class="size">–</td></tr>
+        <tr data-os="mac"><td class="plat"><b>macOS</b> <span>Intel</span></td><td class="file"><a href="https://github.com/fabbisoftware/nexa-agent-releases/releases/latest/download/nexa-agent-darwin-x64.tar.gz">nexa-agent-darwin-x64.tar.gz</a></td><td class="size">–</td></tr>
+        <tr data-os="linux"><td class="plat"><b>Linux</b> <span>x64, glibc</span></td><td class="file"><a href="https://github.com/fabbisoftware/nexa-agent-releases/releases/latest/download/nexa-agent-linux-x64.tar.gz">nexa-agent-linux-x64.tar.gz</a></td><td class="size">–</td></tr>
+        <tr data-os="linux"><td class="plat"><b>Linux</b> <span>arm64, glibc</span></td><td class="file"><a href="https://github.com/fabbisoftware/nexa-agent-releases/releases/latest/download/nexa-agent-linux-arm64.tar.gz">nexa-agent-linux-arm64.tar.gz</a></td><td class="size">–</td></tr>
+        <tr data-os="win"><td class="plat"><b>Windows</b> <span>x64, preview</span></td><td class="file"><a href="https://github.com/fabbisoftware/nexa-agent-releases/releases/latest/download/nexa-agent-windows-x64.zip">nexa-agent-windows-x64.zip</a></td><td class="size">–</td></tr>
+        <tr><td class="plat"><b>Checksums</b> <span>all files</span></td><td class="file"><a href="https://github.com/fabbisoftware/nexa-agent-releases/releases/latest/download/SHA256SUMS">SHA256SUMS</a></td><td class="size">–</td></tr>
+        <!--/nexa:assets--></tbody>
+    </table>
+  </div>
+  <p>Verify a download before unpacking it, in the folder that holds both files:</p>
+  <div class="cmd">
+    <div class="cmd-head"><span class="cmd-tag">macOS / Linux</span><button class="copy" type="button">Copy</button></div>
+    <pre><span class="p">$</span>shasum -a 256 -c SHA256SUMS --ignore-missing</pre>
+  </div>
+  <div class="cmd">
+    <div class="cmd-head"><span class="cmd-tag">powershell</span><button class="copy" type="button">Copy</button></div>
+    <pre><span class="p">PS&gt;</span>(Get-FileHash .\nexa-agent-windows-x64.zip -Algorithm SHA256).Hash   <span class="c"># compare with SHA256SUMS</span></pre>
+  </div>
+  <p class="note">A browser download on macOS is quarantined by Gatekeeper and the bundled runtime is not notarized; the installer avoids that, so prefer it.</p>
+</section>
+
+<section id="update">
+  <h2><span class="n">04</span>Update and roll back</h2>
+  <p class="sub">Run the installer again to move to the latest release. The three most recent versions stay on disk, so pinning an older one is fast. <code class="k">nexa upgrade</code> updates the npm-based CLI, not this build.</p>
+  <div class="cmd">
+    <div class="cmd-head"><span class="cmd-tag">macOS / Linux</span><button class="copy" type="button">Copy</button></div>
+    <pre><span class="p">$</span>curl -fsSL https://downloads.agilekit.cc/nexa-agent-dl/install.sh | bash                          <span class="c"># latest</span>
+<span class="p">$</span>curl -fsSL https://downloads.agilekit.cc/nexa-agent-dl/install.sh | bash -s -- --version 3.7.1   <span class="c"># pin</span></pre>
+  </div>
+  <div class="cmd">
+    <div class="cmd-head"><span class="cmd-tag">powershell · pin a version</span><button class="copy" type="button">Copy</button></div>
+    <pre><span class="p">PS&gt;</span>&amp; ([scriptblock]::Create((irm https://downloads.agilekit.cc/nexa-agent-dl/install.ps1))) -Version 3.7.1</pre>
+  </div>
+</section>
+
+<section id="requirements">
+  <h2><span class="n">05</span>Requirements</h2>
+  <ul class="reqs">
+    <li><b>Nothing to install first.</b> Node 22, ripgrep and the SQLite engine of the knowledge base ship inside the archive; no npm, no compiler.</li>
+    <li><b>macOS 11 or later</b> on Apple silicon or Intel. An Intel terminal running under Rosetta still gets the Apple silicon build.</li>
+    <li><b>Linux x64 or arm64</b> with glibc 2.28 or later (Ubuntu 20.04+, Debian 10+, RHEL 8+), plus <code class="k">curl</code>, <code class="k">tar</code> and <code class="k">sha256sum</code> or <code class="k">shasum</code>.</li>
+    <li><b>Windows 10/11, 64-bit</b>, PowerShell 5.1 or later. Preview: the CLI runs, the TUI is not supported yet. Windows on ARM uses the x64 build.</li>
+    <li><b>Alpine (musl) or another platform?</b> Use the <a href="/nexa-dl/">NEXA CLI</a>, which installs with npm on Node 22.19+.</li>
+    <li><b>Corporate proxy:</b> the installer uses your <code class="k">HTTPS_PROXY</code>. Downloads come from <code class="k">github.com</code> and <code class="k">objects.githubusercontent.com</code>.</li>
+  </ul>
+</section>
+
+<section id="uninstall">
+  <h2><span class="n">06</span>Uninstall</h2>
+  <div class="cmd">
+    <div class="cmd-head"><span class="cmd-tag">macOS / Linux</span><button class="copy" type="button">Copy</button></div>
+    <pre><span class="p">$</span>rm -rf ~/.nexa-agent   <span class="c"># then delete the "# NEXA Agent" PATH line from your shell profile</span></pre>
+  </div>
+  <div class="cmd">
+    <div class="cmd-head"><span class="cmd-tag">powershell</span><button class="copy" type="button">Copy</button></div>
+    <pre><span class="p">PS&gt;</span>Remove-Item -Recurse -Force "$env:LOCALAPPDATA\nexa-agent"   <span class="c"># then remove it from your user PATH</span></pre>
+  </div>
+</section>
+
+<section id="releases">
+  <h2><span class="n">07</span>Releases</h2>
+  <div class="log" id="release-log"><!--nexa:releases-->
+      <div class="item">
+        <a class="v" href="https://github.com/fabbisoftware/nexa-agent-releases/releases">All releases on GitHub →</a>
+        <p>The first build is on its way. Until then, the <a href="/nexa-dl/">NEXA CLI</a> installs the same NEXA with npm.</p>
+      </div>
+      <!--/nexa:releases--></div>
+</section>
+
+<footer>
+  <div class="foot-links">
+    <a href="install.sh">install.sh</a>
+    <a href="install.ps1">install.ps1</a>
+    <a href="releases.json">releases.json</a>
+    <a href="https://github.com/fabbisoftware/nexa-agent-releases/releases">GitHub releases</a>
+  </div>
+  <div class="foot-row">
+    <span>Sibling tools → <a href="/nexa-dl/">NEXA CLI (npm)</a> · <a href="/dwb-dl/">dwb</a></span>
+    <span>NEXA is proprietary software of Fabbi Holdings.</span>
+  </div>
+</footer>
+
+</div>
+<script>
+(function(){
+  // copy buttons: strip prompts and trailing comments
+  document.querySelectorAll('.copy').forEach(function(b){
+    b.addEventListener('click',function(){
+      var pre=b.closest('.cmd').querySelector('pre');
+      var text=pre.innerText.replace(/^(\$|PS>)\s?/gm,'').replace(/[ \t]+#.*$/gm,'').replace(/[ \t]+$/gm,'').trim();
+      var done=function(){b.textContent='Copied';b.classList.add('ok');setTimeout(function(){b.textContent='Copy';b.classList.remove('ok')},1400)};
+      var fallback=function(){var r=document.createRange();r.selectNodeContents(pre);var s=getSelection();s.removeAllRanges();s.addRange(r)};
+      try{navigator.clipboard.writeText(text).then(done,fallback)}catch(e){fallback()}
+    });
+  });
+
+  // OS detection and tabs
+  var ua=(navigator.userAgentData&&navigator.userAgentData.platform)||navigator.platform||navigator.userAgent||'';
+  var os=/win/i.test(ua)?'win':/mac|iphone|ipad/i.test(ua)?'mac':/linux|x11|cros/i.test(ua)?'linux':'';
+  var tabs={unix:document.getElementById('tab-unix'),win:document.getElementById('tab-win')};
+  function select(k){
+    Object.keys(tabs).forEach(function(n){
+      var on=n===k;tabs[n].setAttribute('aria-selected',on);tabs[n].tabIndex=on?0:-1;
+      document.getElementById('pane-'+n).hidden=!on;
+    });
+  }
+  Object.keys(tabs).forEach(function(n){
+    tabs[n].addEventListener('click',function(){select(n)});
+    tabs[n].addEventListener('keydown',function(e){
+      if(e.key==='ArrowRight'||e.key==='ArrowLeft'){var o=n==='unix'?'win':'unix';select(o);tabs[o].focus();e.preventDefault()}
+    });
+  });
+  var mine=os==='win'?'win':'unix';
+  if(os){var h=document.createElement('span');h.className='here';h.textContent='detected';tabs[mine].appendChild(h)}
+  select(mine);
+  if(os)document.querySelectorAll('#asset-rows tr[data-os="'+os+'"]').forEach(function(r){r.classList.add('mine')});
+})();
+</script>
+</body>
+</html>
