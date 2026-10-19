@@ -1,5 +1,5 @@
 import { strict as assert } from "node:assert";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { cpSync, createReadStream, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
@@ -36,10 +36,18 @@ describe("install.ps1", { skip: process.platform !== "win32" && "install.ps1 run
     writeFileSync(join(dist, "SHA256SUMS"), `${sha256File(join(dist, ASSET))}  ${ASSET}\n`);
   };
 
+  // Async on purpose: the release server runs in this process; spawnSync would block it
+  // and the installer's download would wait forever.
   const install = (args, env = {}) =>
-    spawnSync("powershell", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", INSTALL, ...args], {
-      encoding: "utf8",
-      env: { ...process.env, NEXA_AGENT_HOME: join(tmp, "agent"), NEXA_AGENT_DL_BASE: base, ...env },
+    new Promise((ok) => {
+      const child = spawn("powershell", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", INSTALL, ...args], {
+        env: { ...process.env, NEXA_AGENT_HOME: join(tmp, "agent"), NEXA_AGENT_DL_BASE: base, ...env },
+      });
+      let stdout = "";
+      let stderr = "";
+      child.stdout.on("data", (d) => (stdout += d));
+      child.stderr.on("data", (d) => (stderr += d));
+      child.on("close", (status) => ok({ status, stdout, stderr }));
     });
 
   before(async () => {
@@ -59,8 +67,8 @@ describe("install.ps1", { skip: process.platform !== "win32" && "install.ps1 run
     rmSync(tmp, { recursive: true, force: true });
   });
 
-  it("installs a pinned version and writes working nexa-agent and nexa shims", () => {
-    const res = install(["-Version", "3.7.1", "-NoModifyPath"]);
+  it("installs a pinned version and writes working nexa-agent and nexa shims", async () => {
+    const res = await install(["-Version", "3.7.1", "-NoModifyPath"]);
     assert.equal(res.status, 0, `${res.stdout}\n${res.stderr}`);
     assert.match(res.stdout, /sha256 verified/);
     for (const name of ["nexa-agent", "nexa"]) {
@@ -72,12 +80,12 @@ describe("install.ps1", { skip: process.platform !== "win32" && "install.ps1 run
     assert.match(readFileSync(join(tmp, "agent", "bin", "nexa.cmd"), "utf8"), /runtime\\node\.exe/);
   });
 
-  it("refuses a download whose checksum does not match", () => {
+  it("refuses a download whose checksum does not match", async () => {
     const sums = join(tmp, "rel", "download", "v3.7.1", "SHA256SUMS");
     const good = readFileSync(sums, "utf8");
     writeFileSync(sums, `${"0".repeat(64)}  ${ASSET}\n`);
     try {
-      const res = install(["-Version", "3.7.1", "-NoModifyPath"], { NEXA_AGENT_HOME: join(tmp, "agent-bad") });
+      const res = await install(["-Version", "3.7.1", "-NoModifyPath"], { NEXA_AGENT_HOME: join(tmp, "agent-bad") });
       assert.notEqual(res.status, 0);
       assert.match(`${res.stdout}${res.stderr}`, /checksum mismatch/);
       assert.equal(existsSync(join(tmp, "agent-bad", "bin", "nexa-agent.cmd")), false);

@@ -12,12 +12,11 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$ProgressPreference = 'SilentlyContinue'   # Invoke-WebRequest is very slow with the progress bar on PS 5
 [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 
 $Repo = if ($env:NEXA_AGENT_REPO) { $env:NEXA_AGENT_REPO } else { 'fabbisoftware/nexa-agent-releases' }
 $DlBase = if ($env:NEXA_AGENT_DL_BASE) { $env:NEXA_AGENT_DL_BASE } else { "https://github.com/$Repo/releases" }
-$Root = if ($env:NEXA_AGENT_HOME) { $env:NEXA_AGENT_HOME } else { Join-Path $env:LOCALAPPDATA 'nexa-agent' }
+$Root = if ($env:NEXA_AGENT_HOME) { $env:NEXA_AGENT_HOME } else { [IO.Path]::Combine($env:LOCALAPPDATA, 'nexa-agent') }
 $BinName = 'nexa-agent'
 $KeepVersions = 3
 
@@ -51,58 +50,81 @@ if ($Version) { $RelUrl = "$DlBase/download/v$Version"; $Label = $Version }
 else { $RelUrl = "$DlBase/latest/download"; $Label = 'latest' }
 Info "Installing NEXA Agent $Label for windows-$Arch"
 
-$Tmp = Join-Path ([IO.Path]::GetTempPath()) ("nexa-agent-" + [guid]::NewGuid())
-New-Item -ItemType Directory -Path $Tmp | Out-Null
+# Downloads, hashing and unzip go through .NET, not Invoke-WebRequest/Get-FileHash/Expand-Archive:
+# Windows PowerShell started from PowerShell 7 inherits a PSModulePath that hides the
+# script-module cmdlets (Get-FileHash "is not recognized"), and .NET behaves the same everywhere.
+function Fetch($url, $file) {
+  $wc = [Net.WebClient]::new()
+  if ([Net.WebRequest]::DefaultWebProxy) { [Net.WebRequest]::DefaultWebProxy.Credentials = [Net.CredentialCache]::DefaultNetworkCredentials }
+  try { $wc.DownloadFile($url, $file) } finally { $wc.Dispose() }
+}
+function Sha256($file) {
+  $sha = [Security.Cryptography.SHA256]::Create()
+  $fs = [IO.File]::OpenRead($file)
+  try { return ([BitConverter]::ToString($sha.ComputeHash($fs)) -replace '-', '').ToLower() } finally { $fs.Dispose(); $sha.Dispose() }
+}
+try { [void][IO.Compression.ZipFile] } catch { [void][Reflection.Assembly]::LoadWithPartialName('System.IO.Compression.FileSystem') }
+
+$Tmp = [IO.Path]::Combine([IO.Path]::GetTempPath(), 'nexa-agent-' + [guid]::NewGuid())
+[void][IO.Directory]::CreateDirectory($Tmp)
+$staged = $null
 try {
-  $sums = Join-Path $Tmp 'SHA256SUMS'
-  try { Invoke-WebRequest -UseBasicParsing -Uri "$RelUrl/SHA256SUMS" -OutFile $sums }
+  $sums = [IO.Path]::Combine($Tmp, 'SHA256SUMS')
+  try { Fetch "$RelUrl/SHA256SUMS" $sums }
   catch { Die "no release found at $RelUrl (check the version, or your network/proxy)." }
 
   $want = $null
-  foreach ($line in Get-Content $sums) {
-    $parts = $line -split '\s+', 2
+  foreach ($line in [IO.File]::ReadAllLines($sums)) {
+    $parts = $line.Trim() -split '\s+', 2
     if ($parts.Count -eq 2 -and $parts[1].TrimStart('*').Trim() -eq $Asset) { $want = $parts[0].ToLower() }
   }
-  if (-not $want) { Die "release $Label has no build for windows-$Arch." }
+  if (-not $want) { Die "release $Label has no build for windows-$Arch. On another platform, install the NEXA CLI with npm (Node 22.19+): https://downloads.agilekit.cc/nexa-dl/" }
 
-  $zip = Join-Path $Tmp $Asset
-  try { Invoke-WebRequest -UseBasicParsing -Uri "$RelUrl/$Asset" -OutFile $zip }
+  $zip = [IO.Path]::Combine($Tmp, $Asset)
+  try { Fetch "$RelUrl/$Asset" $zip }
   catch { Die "download failed: $RelUrl/$Asset" }
-  $got = (Get-FileHash -Algorithm SHA256 $zip).Hash.ToLower()
+  $got = Sha256 $zip
   if ($got -ne $want) { Die "checksum mismatch for $Asset (expected $want, got $got). Download again; if it repeats, report it." }
   Ok "sha256 verified ($Asset)"
 
-  $x = Join-Path $Tmp 'x'
-  Expand-Archive -Path $zip -DestinationPath $x -Force
+  # Unzip straight into the install root (same volume as the final folder, so the
+  # rename below works; TEMP is often on another drive).
+  $versions = [IO.Path]::Combine($Root, 'versions')
+  $bin = [IO.Path]::Combine($Root, 'bin')
+  [void][IO.Directory]::CreateDirectory($versions)
+  [void][IO.Directory]::CreateDirectory($bin)
+  $staged = [IO.Path]::Combine($versions, '.new-' + [guid]::NewGuid())
+  [IO.Compression.ZipFile]::ExtractToDirectory($zip, $staged)
   # The archive holds one top-level folder with agent.json, bin\ and runtime\node.exe.
-  $infoFile = Get-ChildItem -Path $x -Recurse -File -Filter 'agent.json' | Select-Object -First 1
-  if (-not $infoFile) { Die "$Asset has no agent.json; it is not a NEXA Agent archive." }
-  $info = Get-Content -Raw $infoFile.FullName | ConvertFrom-Json
-  $agentDir = $infoFile.Directory.FullName
+  $infoPath = [IO.Directory]::GetFiles($staged, 'agent.json', [IO.SearchOption]::AllDirectories) | Select-Object -First 1
+  if (-not $infoPath) { Die "$Asset has no agent.json; it is not a NEXA Agent archive." }
+  $info = [IO.File]::ReadAllText($infoPath) | ConvertFrom-Json
+  $agentDir = [IO.Path]::GetDirectoryName($infoPath)
   foreach ($need in @($info.runtime, $info.entry)) {
-    if (-not $need -or -not (Test-Path (Join-Path $agentDir $need))) { Die "$Asset is incomplete: $need is missing." }
+    if (-not $need -or -not [IO.File]::Exists([IO.Path]::Combine($agentDir, $need))) { Die "$Asset is incomplete: $need is missing." }
   }
   if (-not $Version) { $Version = $info.version }
+  $rel = $agentDir.Substring($staged.Length).TrimStart('\', '/')
 
   # --- install: versions\<v>, one bin\<name>.cmd shim per command ---------------
-  $versions = Join-Path $Root 'versions'
-  $bin = Join-Path $Root 'bin'
-  New-Item -ItemType Directory -Force -Path $versions, $bin | Out-Null
-  $dest = Join-Path $versions $Version
-  if (Test-Path $dest) { Remove-Item -Recurse -Force $dest }
-  Copy-Item -Recurse $x $dest   # Move-Item fails across volumes on PS 5 (TEMP on another drive)
-  $rel = $agentDir.Substring($x.Length).TrimStart('\', '/')
+  $dest = [IO.Path]::Combine($versions, $Version)
+  if ([IO.Directory]::Exists($dest)) { [IO.Directory]::Delete($dest, $true) }
+  [IO.Directory]::Move($staged, $dest)
+  $staged = $null
   $node = "%~dp0..\versions\$Version\$rel\" + ($info.runtime -replace '/', '\')
   $entry = "%~dp0..\versions\$Version\$rel\" + ($info.entry -replace '/', '\')
   foreach ($name in @('nexa-agent', 'nexa')) {
     $shim = "@echo off`r`n`"$node`" `"$entry`" %*`r`n"
-    [IO.File]::WriteAllText((Join-Path $bin "$name.cmd"), $shim, [Text.Encoding]::ASCII)
+    [IO.File]::WriteAllText([IO.Path]::Combine($bin, "$name.cmd"), $shim, [Text.Encoding]::ASCII)
   }
   Ok "installed $Version into $dest (commands: nexa-agent, nexa)"
 
-  Get-ChildItem $versions -Directory | Sort-Object LastWriteTime -Descending |
-    Select-Object -Skip $KeepVersions | Where-Object { $_.Name -ne $Version } |
-    ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
+  # keep the newest $KeepVersions versions for rollback
+  $dirs = [IO.DirectoryInfo]::new($versions).GetDirectories() | Where-Object { -not $_.Name.StartsWith('.') }
+  $dirs = @($dirs | Sort-Object LastWriteTimeUtc -Descending)
+  for ($i = $KeepVersions; $i -lt $dirs.Count; $i++) {
+    if ($dirs[$i].Name -ne $Version) { [IO.Directory]::Delete($dirs[$i].FullName, $true) }
+  }
 
   # --- PATH (user scope, no admin) ---------------------------------------------
   $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
@@ -116,10 +138,11 @@ try {
   }
   $env:Path = "$bin;$env:Path"
 
-  $ver = (& (Join-Path $bin "$BinName.cmd") --version 2>$null | Out-String).Trim()
+  $ver = (& ([IO.Path]::Combine($bin, "$BinName.cmd")) --version 2>$null | Out-String).Trim()
   if ($ver) { Ok "$BinName --version -> $ver" } else { Info "$BinName is installed but --version printed nothing." }
   Info "Uninstall: Remove-Item -Recurse -Force `"$Root`" and remove $bin from your user PATH"
 }
 finally {
-  Remove-Item -Recurse -Force $Tmp -ErrorAction SilentlyContinue
+  if ($staged -and [IO.Directory]::Exists($staged)) { [IO.Directory]::Delete($staged, $true) }
+  if ([IO.Directory]::Exists($Tmp)) { [IO.Directory]::Delete($Tmp, $true) }
 }

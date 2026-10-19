@@ -23,6 +23,6 @@ jobs:
         with:
           node-version: 22
       - name: Tests (install.sh on macOS/Linux, install.ps1 on Windows, renderer, deploy guard)
-        run: node --test "test/*.test.mjs"
+        run: node --test --test-timeout=300000 "test/*.test.mjs"
       - name: Site is consistent
         run: node scripts/render-site.mjs check
