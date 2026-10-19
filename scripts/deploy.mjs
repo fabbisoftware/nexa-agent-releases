@@ -138,7 +138,7 @@ export async function deploy(opts) {
   // --- preflight -----------------------------------------------------------------
   step("preflight: git, tools, staging branch, site consistency");
   if (sh("git", ["-C", ROOT, "status", "--porcelain"]).stdout.trim()) throw new Error(`${ROOT} has uncommitted changes`);
-  sh("git", ["-C", ROOT, "fetch", "-q", "origin", "main"]);
+  sh("git", ["-C", ROOT, "fetch", "-q", "origin", "main:refs/remotes/origin/main"]);
   const head = sh("git", ["-C", ROOT, "rev-parse", "HEAD"]).stdout.trim();
   const main = sh("git", ["-C", ROOT, "rev-parse", "origin/main"]).stdout.trim();
   if (head !== main) throw new Error(`HEAD ${head.slice(0, 7)} is not origin/main ${main.slice(0, 7)}: git checkout main && git pull --ff-only`);
