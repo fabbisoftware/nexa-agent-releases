@@ -1,0 +1,44 @@
+NEXA Agent - Proprietary Software License
+
+Copyright (c) 2026 Fabbi Holdings. All rights reserved.
+
+This software, including its source code, object code, skills, templates,
+prompts, document structures, knowledge-base formats and documentation (the
+"Software"), is the confidential and proprietary property of Fabbi Holdings
+and is protected by copyright and other intellectual property laws.
+
+1. License grant. Use of the Software is permitted only to persons and
+   organisations that hold a valid NEXA license issued by Fabbi Holdings or an
+   entity it authorises (a signed NEXA license key, GitHub access granted to
+   the NEXA repository, or a written agreement), and only within the tier and
+   term of that license.
+
+2. Restrictions. Unless a written agreement with Fabbi Holdings says
+   otherwise, you may not: (a) copy, modify, translate or create derivative
+   works of the Software, except files that `nexa init` or other NEXA commands
+   place in your own project for your own use under a valid license;
+   (b) distribute, sublicense, sell, rent, lend or otherwise make the Software
+   available to any third party; (c) remove, disable or circumvent license
+   checks, tier limits or this notice; (d) reverse engineer, decompile or
+   disassemble the Software, except to the extent applicable law expressly
+   permits it.
+
+3. Your data. Documents, code and knowledge bases that you create with the
+   Software from your own inputs remain yours. Fabbi Holdings acquires no
+   rights in them under this license.
+
+4. Third-party components. The Software includes open source components that
+   are licensed under their own terms, listed in the NOTICE file. Those terms
+   govern those components.
+
+5. Termination. This license ends automatically when your NEXA license ends
+   or is revoked, or when you breach these terms. On termination you must stop
+   using the Software and delete your copies of it.
+
+6. No warranty. The Software is provided "as is", without warranty of any
+   kind, express or implied, including merchantability, fitness for a
+   particular purpose and non-infringement. To the maximum extent permitted by
+   law, Fabbi Holdings is not liable for any damages arising from the use of
+   the Software.
+
+For licensing enquiries, contact Fabbi Holdings.
