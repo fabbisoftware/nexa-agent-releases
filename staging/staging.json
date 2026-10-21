@@ -1,0 +1,15 @@
+{
+  "version": "3.8.0",
+  "tag": "v3.8.0",
+  "commit": "6b16b188bb1e71304d010acf655e6b2785c66887",
+  "built_at": "2026-10-21T02:51:40.910Z",
+  "bundle": {
+    "file": "nexa-3.8.0.tgz",
+    "sha256": "30076c693dd7defb1e19a8307e08f7a02bcae044e0bdeee156c35c07a2dfb04d",
+    "size": 70160752
+  },
+  "cli": false,
+  "agent": true,
+  "dry_run": false,
+  "notes": "First NEXA Agent release: NEXA 3.8.0 with its own Node 22 runtime, installed with one command on macOS, Linux or Windows (preview), no npm or Node needed. NEXA 3.8.0 runs TUI sub-agents in parallel, with git worktree isolation for writing children and builtin `reviewer` and `worker` agents, makes the first TUI turn faster and adds the `prr`, `nexa-audit-readiness`, `pr-review` and `synca-playbook` skills."
+}
