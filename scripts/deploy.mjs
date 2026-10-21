@@ -15,13 +15,13 @@
 //   { "siteRoot": "<folder deployed to Pages>", "pagesProject": "…", "pagesBranch": "main",
 //     "r2Bucket": "…", "wrangler": "wrangler" }
 import { spawnSync } from "node:child_process";
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { assembleAgent } from "./assemble-agent.mjs";
-import { AGENT_ASSETS, RELEASES_REPO, SITE_BASE, TGZ_BASE, parseArgs, parseSums, readJson, sha256, sha256File, writeJson } from "./lib.mjs";
-import { checkSite } from "./render-site.mjs";
+import { AGENT_ASSETS, RELEASES_REPO, SITE_BASE, TGZ_BASE, httpGet, parseArgs, parseSums, readJson, sha256, sha256File, writeJson } from "./lib.mjs";
+import { checkSite, driftFrom, liveSite, localSite } from "./render-site.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const SITE = join(ROOT, "site");
@@ -37,18 +37,6 @@ function sh(cmd, args, opts = {}) {
   if (r.error) throw new Error(`${cmd}: ${r.error.message}`);
   if (r.status !== 0 && !opts.allowFail) throw new Error(`${cmd} ${args.join(" ")} exited ${r.status}\n${(r.stderr ?? "").toString().trim()}`);
   return r;
-}
-
-/** GET via curl (honours HTTPS_PROXY, unlike Node's fetch on 22): { status, body: Buffer }. */
-export function httpGet(url) {
-  const tmp = mkdtempSync(join(tmpdir(), "nexa-get-"));
-  try {
-    const r = sh("curl", ["-sS", "-L", "-o", join(tmp, "body"), "-w", "%{http_code}", url], { allowFail: true });
-    const status = Number(r.stdout) || 0;
-    return { status, body: existsSync(join(tmp, "body")) ? readFileSync(join(tmp, "body")) : Buffer.alloc(0) };
-  } finally {
-    rmSync(tmp, { recursive: true, force: true });
-  }
 }
 
 /** Same-site paths a page links to: href/src attributes and absolute site URLs in the text. */
@@ -147,6 +135,10 @@ export async function deploy(opts) {
   const staging = hasStaging ? JSON.parse(sh("git", ["-C", ROOT, "show", `${stagingRef}:staging/staging.json`]).stdout) : null;
   const problems = checkSite(SITE);
   if (problems.length) throw new Error(`site/ is inconsistent:\n  ${problems.join("\n  ")}`);
+  // A Pages deploy replaces the pages wholesale: site/ must carry every version that
+  // is live (or in the site root) already, with the same bytes, and nothing older.
+  const drift = [...driftFrom(SITE, liveSite(), "the live site"), ...driftFrom(SITE, localSite(cfg.siteRoot), cfg.siteRoot)];
+  if (drift.length) throw new Error(`deploying site/ would drop or roll back what is out there:\n  ${drift.join("\n  ")}\nBring site/ up to date on main first (node scripts/render-site.mjs drift shows the gap), then deploy.`);
   wrangler(["--version"]);
   sh("gh", ["auth", "status"]);
 

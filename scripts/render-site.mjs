@@ -6,6 +6,7 @@
 //   node scripts/render-site.mjs cli   --bundle <bundle.json> --notes-file <notes.md> [--date YYYY-MM-DD]
 //   node scripts/render-site.mjs agent --version <v> --dist <dir with archives + SHA256SUMS> --notes-file <notes.md> [--node <v>] [--date …]
 //   node scripts/render-site.mjs check
+//   node scripts/render-site.mjs drift     # site/ against the live site, before rendering or deploying
 //
 // A version already listed is never rewritten: publish a new version instead.
 import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
@@ -19,6 +20,7 @@ import {
   compareVersions,
   escapeHtml,
   formatSize,
+  httpGet,
   isVersion,
   markdownToHtml,
   parseArgs,
@@ -218,10 +220,65 @@ export function checkSite(site) {
   return problems;
 }
 
+const cliIndex = (data) => data && { latest: data.latest, items: new Map(data.versions.map((v) => [v.version, v.sha256])) };
+const agentIndex = (data) =>
+  data && { latest: data.latest, items: new Map(data.releases.map((r) => [r.version, r.assets.map((a) => `${a.name}:${a.sha256}`).sort().join(" ")])) };
+
+/** nexa-dl/versions.json and nexa-agent-dl/releases.json of a site folder (null when absent). */
+export function localSite(root) {
+  const read = (f) => (existsSync(join(root, f)) ? readJson(join(root, f)) : null);
+  return { cli: read("nexa-dl/versions.json"), agent: read("nexa-agent-dl/releases.json") };
+}
+
+/** The same two files as the live site serves them (null on 404, e.g. before the first agent release). */
+export function liveSite(get = httpGet, base = SITE_BASE) {
+  const fetchJson = (path) => {
+    const res = get(`${base}${path}`);
+    if (res.status === 404) return null;
+    if (res.status !== 200) throw new Error(`${base}${path}: HTTP ${res.status}; cannot compare site/ with the live site`);
+    return JSON.parse(res.body.toString("utf8"));
+  };
+  return { cli: fetchJson("/nexa-dl/versions.json"), agent: fetchJson("/nexa-agent-dl/releases.json") };
+}
+
+/**
+ * What putting site/ in place of `other` (the live site, or the folder deployed to Pages)
+ * would drop or roll back: a version `other` lists and site/ does not, a version whose
+ * sha256 differs, a latest older than `other`'s. [] when site/ carries all of it.
+ */
+export function driftFrom(site, other, where) {
+  const mine = localSite(site);
+  const problems = [];
+  for (const [page, index, theirs, ours] of [
+    ["nexa-dl", cliIndex, other.cli, mine.cli],
+    ["nexa-agent-dl", agentIndex, other.agent, mine.agent ?? { latest: null, releases: [] }],
+  ]) {
+    if (!theirs) continue;
+    const t = index(theirs);
+    const o = index(ours);
+    const missing = [...t.items.keys()].filter((v) => !o.items.has(v));
+    if (missing.length) problems.push(`${page}: ${where} lists ${missing.join(", ")}, site/ does not`);
+    const changed = [...t.items].filter(([v, sum]) => o.items.has(v) && o.items.get(v) !== sum).map(([v]) => v);
+    if (changed.length) problems.push(`${page}: sha256 of ${changed.join(", ")} in ${where} differs from site/`);
+    if (t.latest && (!o.latest || compareVersions(o.latest, t.latest) < 0)) problems.push(`${page}: latest is ${t.latest} in ${where}, ${o.latest ?? "(none)"} in site/`);
+  }
+  return problems;
+}
+
 function main(argv) {
   const [mode, ...rest] = argv;
   const args = parseArgs(rest, { values: ["bundle", "notes-file", "date", "version", "dist", "node", "site"] });
   const site = resolve(args.site ?? join(REPO_ROOT, "site"));
+  if (mode === "drift") {
+    const problems = driftFrom(site, liveSite(), SITE_BASE);
+    for (const p of problems) process.stderr.write(`✗ ${p}\n`);
+    if (problems.length) {
+      process.stderr.write("site/ is behind the live site: bring the missing versions into site/ before rendering or deploying.\n");
+      return 1;
+    }
+    process.stdout.write(`✓ site/ carries every version ${SITE_BASE} serves\n`);
+    return 0;
+  }
   if (mode === "check") {
     const problems = checkSite(site);
     for (const p of problems) process.stderr.write(`✗ ${p}\n`);
@@ -241,7 +298,7 @@ function main(argv) {
     const files = renderAgent(site, { version: args.version.replace(/^v/, ""), dist: resolve(args.dist), date: args.date, notesHtml, node: args.node });
     process.stdout.write(`✓ nexa-agent-dl ${args.version}: ${files.length} files\n`);
   } else {
-    throw new Error("usage: render-site.mjs cli|agent|check …");
+    throw new Error("usage: render-site.mjs cli|agent|check|drift …");
   }
   const problems = checkSite(site);
   for (const p of problems) process.stderr.write(`✗ ${p}\n`);

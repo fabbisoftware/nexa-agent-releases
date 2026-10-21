@@ -1,7 +1,10 @@
 // Shared helpers for the release scripts. Zero dependencies: they run in GitHub
 // Actions, in claude.ai/code and on the owner's machine with plain Node 22.
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 export const readJson = (file) => JSON.parse(readFileSync(file, "utf8"));
 export const writeJson = (file, value) => writeFileSync(file, JSON.stringify(value, null, 2) + "\n");
@@ -101,6 +104,18 @@ export function parseSums(text) {
     if (m) map.set(m[2].trim(), m[1]);
   }
   return map;
+}
+
+/** GET via curl (honours HTTPS_PROXY, unlike Node's fetch on 22): { status, body: Buffer }; status 0 when curl could not connect. */
+export function httpGet(url) {
+  const tmp = mkdtempSync(join(tmpdir(), "nexa-get-"));
+  try {
+    const r = spawnSync("curl", ["-sS", "-L", "-o", join(tmp, "body"), "-w", "%{http_code}", url], { encoding: "utf8" });
+    if (r.error) throw new Error(`curl: ${r.error.message}`);
+    return { status: Number(r.stdout) || 0, body: existsSync(join(tmp, "body")) ? readFileSync(join(tmp, "body")) : Buffer.alloc(0) };
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
 }
 
 export function parseArgs(argv, { flags = [], values = [] } = {}) {
