@@ -125,7 +125,7 @@ footer{border-top:1px solid var(--line);margin-top:54px;padding:26px 0 64px}
 
 <header class="hero">
   <p class="eyebrow">NEXA Agent</p>
-  <h1>nexa-agent<span class="pill"><!--nexa:version-->latest<!--/nexa:version--></span></h1>
+  <h1>nexa-agent<span class="pill"><!--nexa:version-->3.8.0<!--/nexa:version--></span></h1>
   <p class="lede"><b>NEXA</b> with its own Node runtime: the same CLI and TUI as the npm package, for machines without Node or npm. One command installs <b>nexa-agent</b> and <b>nexa</b> into your home folder with no admin rights, and every download is checked against the release's <b>SHA-256</b> list before anything is written.</p>
   <ul class="facts">
     <li>macOS · Apple silicon &amp; Intel</li>
@@ -187,12 +187,12 @@ footer{border-top:1px solid var(--line);margin-top:54px;padding:26px 0 64px}
     <table>
       <thead><tr><th>Platform</th><th>File</th><th>Size</th></tr></thead>
       <tbody id="asset-rows"><!--nexa:assets-->
-        <tr data-os="mac"><td class="plat"><b>macOS</b> <span>Apple silicon</span></td><td class="file"><a href="https://github.com/fabbisoftware/nexa-agent-releases/releases/latest/download/nexa-agent-darwin-arm64.tar.gz">nexa-agent-darwin-arm64.tar.gz</a></td><td class="size">–</td></tr>
-        <tr data-os="mac"><td class="plat"><b>macOS</b> <span>Intel</span></td><td class="file"><a href="https://github.com/fabbisoftware/nexa-agent-releases/releases/latest/download/nexa-agent-darwin-x64.tar.gz">nexa-agent-darwin-x64.tar.gz</a></td><td class="size">–</td></tr>
-        <tr data-os="linux"><td class="plat"><b>Linux</b> <span>x64, glibc</span></td><td class="file"><a href="https://github.com/fabbisoftware/nexa-agent-releases/releases/latest/download/nexa-agent-linux-x64.tar.gz">nexa-agent-linux-x64.tar.gz</a></td><td class="size">–</td></tr>
-        <tr data-os="linux"><td class="plat"><b>Linux</b> <span>arm64, glibc</span></td><td class="file"><a href="https://github.com/fabbisoftware/nexa-agent-releases/releases/latest/download/nexa-agent-linux-arm64.tar.gz">nexa-agent-linux-arm64.tar.gz</a></td><td class="size">–</td></tr>
-        <tr data-os="win"><td class="plat"><b>Windows</b> <span>x64, preview</span></td><td class="file"><a href="https://github.com/fabbisoftware/nexa-agent-releases/releases/latest/download/nexa-agent-windows-x64.zip">nexa-agent-windows-x64.zip</a></td><td class="size">–</td></tr>
-        <tr><td class="plat"><b>Checksums</b> <span>all files</span></td><td class="file"><a href="https://github.com/fabbisoftware/nexa-agent-releases/releases/latest/download/SHA256SUMS">SHA256SUMS</a></td><td class="size">–</td></tr>
+        <tr data-os="mac"><td class="plat"><b>macOS</b> <span>Apple silicon</span></td><td class="file"><a href="https://github.com/fabbisoftware/nexa-agent-releases/releases/download/v3.8.0/nexa-agent-darwin-arm64.tar.gz">nexa-agent-darwin-arm64.tar.gz</a></td><td class="size">83.1 MB</td></tr>
+        <tr data-os="mac"><td class="plat"><b>macOS</b> <span>Intel</span></td><td class="file"><a href="https://github.com/fabbisoftware/nexa-agent-releases/releases/download/v3.8.0/nexa-agent-darwin-x64.tar.gz">nexa-agent-darwin-x64.tar.gz</a></td><td class="size">84.3 MB</td></tr>
+        <tr data-os="linux"><td class="plat"><b>Linux</b> <span>x64, glibc</span></td><td class="file"><a href="https://github.com/fabbisoftware/nexa-agent-releases/releases/download/v3.8.0/nexa-agent-linux-x64.tar.gz">nexa-agent-linux-x64.tar.gz</a></td><td class="size">88.9 MB</td></tr>
+        <tr data-os="linux"><td class="plat"><b>Linux</b> <span>arm64, glibc</span></td><td class="file"><a href="https://github.com/fabbisoftware/nexa-agent-releases/releases/download/v3.8.0/nexa-agent-linux-arm64.tar.gz">nexa-agent-linux-arm64.tar.gz</a></td><td class="size">88.3 MB</td></tr>
+        <tr data-os="win"><td class="plat"><b>Windows</b> <span>x64, preview</span></td><td class="file"><a href="https://github.com/fabbisoftware/nexa-agent-releases/releases/download/v3.8.0/nexa-agent-windows-x64.zip">nexa-agent-windows-x64.zip</a></td><td class="size">97.0 MB</td></tr>
+        <tr><td class="plat"><b>Checksums</b> <span>all files</span></td><td class="file"><a href="https://github.com/fabbisoftware/nexa-agent-releases/releases/download/v3.8.0/SHA256SUMS">SHA256SUMS</a></td><td class="size">–</td></tr>
         <!--/nexa:assets--></tbody>
     </table>
   </div>
@@ -250,8 +250,11 @@ footer{border-top:1px solid var(--line);margin-top:54px;padding:26px 0 64px}
   <h2><span class="n">07</span>Releases</h2>
   <div class="log" id="release-log"><!--nexa:releases-->
       <div class="item">
+        <a class="v" href="https://github.com/fabbisoftware/nexa-agent-releases/releases/tag/v3.8.0">3.8.0</a><span class="tag-new">latest</span><span class="d">2026-10-21</span><span class="d">Node 22.23.3</span>
+        <p>First NEXA Agent release: NEXA 3.8.0 with its own Node 22 runtime, installed with one command on macOS, Linux or Windows (preview), no npm or Node needed. NEXA 3.8.0 runs TUI sub-agents in parallel, with git worktree isolation for writing children and builtin <code class="k">reviewer</code> and <code class="k">worker</code> agents, makes the first TUI turn faster and adds the <code class="k">prr</code>, <code class="k">nexa-audit-readiness</code>, <code class="k">pr-review</code> and <code class="k">synca-playbook</code> skills.</p>
+      </div>
+      <div class="item">
         <a class="v" href="https://github.com/fabbisoftware/nexa-agent-releases/releases">All releases on GitHub →</a>
-        <p>The first build is on its way. Until then, the <a href="/nexa-dl/">NEXA CLI</a> installs the same NEXA with npm.</p>
       </div>
       <!--/nexa:releases--></div>
 </section>

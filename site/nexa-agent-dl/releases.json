@@ -1,4 +1,43 @@
 {
-  "latest": null,
-  "releases": []
+  "latest": "3.8.0",
+  "releases": [
+    {
+      "version": "3.8.0",
+      "date": "2026-10-21",
+      "node": "22.23.3",
+      "assets": [
+        {
+          "name": "nexa-agent-darwin-arm64.tar.gz",
+          "target": "darwin-arm64",
+          "size": 87086676,
+          "sha256": "4587a1cdf0e0676f16e49684e56a0d32f9a166d64b04253a946784601fb375ab"
+        },
+        {
+          "name": "nexa-agent-darwin-x64.tar.gz",
+          "target": "darwin-x64",
+          "size": 88442349,
+          "sha256": "e1b162637b9ff9ec94f79750a9ca203cb768c58ca48f2523d1a1f60c62c78c7e"
+        },
+        {
+          "name": "nexa-agent-linux-x64.tar.gz",
+          "target": "linux-x64",
+          "size": 93234663,
+          "sha256": "5ef202a23bd89b02bc1b202729e193b2ff3b4b7b9966c0f2b6e510cb255e621b"
+        },
+        {
+          "name": "nexa-agent-linux-arm64.tar.gz",
+          "target": "linux-arm64",
+          "size": 92602010,
+          "sha256": "bc69ccc0c0c08448137f257e49f93e1f5a89191b8a485cac1ad12d6f6f10c3db"
+        },
+        {
+          "name": "nexa-agent-windows-x64.zip",
+          "target": "win32-x64",
+          "size": 101762660,
+          "sha256": "3f5396f65fba788346d7d3476be9d0d28e6f21105991628b51035690f5b11736"
+        }
+      ],
+      "notes_html": "<p>First NEXA Agent release: NEXA 3.8.0 with its own Node 22 runtime, installed with one command on macOS, Linux or Windows (preview), no npm or Node needed. NEXA 3.8.0 runs TUI sub-agents in parallel, with git worktree isolation for writing children and builtin <code class=\"k\">reviewer</code> and <code class=\"k\">worker</code> agents, makes the first TUI turn faster and adds the <code class=\"k\">prr</code>, <code class=\"k\">nexa-audit-readiness</code>, <code class=\"k\">pr-review</code> and <code class=\"k\">synca-playbook</code> skills.</p>"
+    }
+  ]
 }
