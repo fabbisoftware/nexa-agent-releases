@@ -1,17 +1,17 @@
 {
   "product": "nexa",
-  "version": "3.7.1",
+  "version": "3.8.0",
   "rc": 1,
-  "tgz": "nexa-3.7.1.tgz",
-  "tgz_url": "https://dl.agilekit.cc/nexa-3.7.1.tgz",
-  "sha256": "0fcac5dbef68a0aa4ecaa9013c993a2905eacad52ed9eaebbd4250e0f290044b",
-  "size": 44817335,
-  "date": "2026-10-18",
+  "tgz": "nexa-3.8.0.tgz",
+  "tgz_url": "https://dl.agilekit.cc/nexa-3.8.0.tgz",
+  "sha256": "af5dbff8004bc346bbd1896a1bdb1273ecfc2a9292a3b7d0fd5e8f2db95a1f3c",
+  "size": 45209339,
+  "date": "2026-10-20",
   "node": ">=22.19",
-  "install": "npm i -g https://dl.agilekit.cc/nexa-3.7.1.tgz",
+  "install": "npm i -g https://dl.agilekit.cc/nexa-3.8.0.tgz",
   "previous": {
-    "version": "3.2.0-alpha.24",
-    "sha256": "afcfe9a7a4b70edca96365cb614de71510e707a5360352f1f573d37cf6f3b11d",
-    "url": "https://dl.agilekit.cc/nexa-3.2.0-alpha.24.tgz"
+    "version": "3.7.1",
+    "sha256": "0fcac5dbef68a0aa4ecaa9013c993a2905eacad52ed9eaebbd4250e0f290044b",
+    "url": "https://dl.agilekit.cc/nexa-3.7.1.tgz"
   }
 }

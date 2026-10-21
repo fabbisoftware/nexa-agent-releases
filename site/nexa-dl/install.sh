@@ -13,7 +13,7 @@ set -euo pipefail
 
 BASE_URL="${NEXA_DL_BASE_URL:-https://downloads.agilekit.cc/nexa-dl}"   # Pages: small files
 TGZ_BASE="${NEXA_DL_TGZ_BASE:-https://dl.agilekit.cc}"                 # R2: tarball (>25MiB)
-DEFAULT_VERSION="3.7.1"   # fallback if versions.json is unreachable
+DEFAULT_VERSION="3.8.0"   # fallback if versions.json is unreachable
 REQ_NODE_MAJOR=22
 
 c_reset=$'\033[0m'; c_red=$'\033[31m'; c_grn=$'\033[32m'; c_ylw=$'\033[33m'; c_dim=$'\033[2m'

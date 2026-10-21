@@ -1,8 +1,14 @@
 {
-  "latest": "3.7.1",
-  "url": "https://dl.agilekit.cc/nexa-3.7.1.tgz",
+  "latest": "3.8.0",
+  "url": "https://dl.agilekit.cc/nexa-3.8.0.tgz",
   "_note": "3.2.0-alpha.13 and .14 were release-skew builds (cut from non-master commits, #198/#199) and are intentionally NOT in this dist — .12 -> .15 is the supported jump. .15 is the first build produced through the publish-guard (#199) + bundle-integrity gate (#256); .16 follows the same guarded flow.",
   "versions": [
+    {
+      "version": "3.8.0",
+      "url": "https://dl.agilekit.cc/nexa-3.8.0.tgz",
+      "sha256": "af5dbff8004bc346bbd1896a1bdb1273ecfc2a9292a3b7d0fd5e8f2db95a1f3c",
+      "date": "2026-10-20"
+    },
     {
       "version": "3.7.1",
       "url": "https://dl.agilekit.cc/nexa-3.7.1.tgz",

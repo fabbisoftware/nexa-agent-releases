@@ -88,7 +88,7 @@ footer{border-top:1px solid var(--line);margin-top:54px;padding:26px 0 64px}
 
   <header class="hero">
     <p class="eyebrow">NEXA CLI</p>
-    <h1>nexa<span class="pill"><!--nexa:version-->v3.7.1<!--/nexa:version--></span></h1>
+    <h1>nexa<span class="pill"><!--nexa:version-->v3.8.0<!--/nexa:version--></span></h1>
     <p class="lede">A self-contained AI coding agent for <b>Japanese SI delivery</b>. Scaffolds the full six-phase SDLC, drives requirement and design generation, validation gates, and a FARE knowledge base. One tarball - no monorepo, no registry auth.</p>
     <div class="phases">
       <span>intake</span><span class="arw">→</span><span>RD</span><span class="arw">→</span><span>BD</span><span class="arw">→</span><span>DD</span><span class="arw">→</span><span>coding</span><span class="arw">→</span><span>delivery</span>
@@ -105,7 +105,7 @@ footer{border-top:1px solid var(--line);margin-top:54px;padding:26px 0 64px}
     <p class="note">Or install the tarball directly with npm:</p>
     <div class="cmd">
       <div class="cmd-head"><span class="cmd-tag">npm</span><button class="copy" type="button">Copy</button></div>
-      <pre><code><span class="p">$</span>npm i -g <!--nexa:tgz-url-->https://dl.agilekit.cc/nexa-3.7.1.tgz<!--/nexa:tgz-url--></code></pre>
+      <pre><code><span class="p">$</span>npm i -g <!--nexa:tgz-url-->https://dl.agilekit.cc/nexa-3.8.0.tgz<!--/nexa:tgz-url--></code></pre>
     </div>
     <p>Then verify:</p>
     <div class="cmd">
@@ -190,7 +190,11 @@ footer{border-top:1px solid var(--line);margin-top:54px;padding:26px 0 64px}
     <div class="log">
 <!--nexa:changelog-->
       <div class="item">
-        <span class="v">3.7.1</span><span class="tag-new">latest</span>
+        <span class="v">3.8.0</span><span class="tag-new">latest</span>
+        <p>Runs TUI sub-agents in parallel, with git worktree isolation for writing children and builtin <code class="k">reviewer</code> and <code class="k">worker</code> agents, and makes the first TUI turn faster. New skills: <code class="k">prr</code>, <code class="k">nexa-audit-readiness</code>, <code class="k">pr-review</code> and <code class="k">synca-playbook</code>. <code class="k">nexa init</code> now ships the scripts the shipped skills run (the zflow <code class="k">--ux-review</code> route and vehicle resolver, the nexa-doc-map build scripts) and merges the zflow hooks into an existing <code class="k">.claude/settings.json</code>. Opt-in SYNCA MCP wiring: <code class="k">nexa init --synca-mcp-url</code>.</p>
+      </div>
+      <div class="item">
+        <span class="v">3.7.1</span>
         <p>First curl-install build of the 3.x line. Adds <code class="k">nexa capabilities</code> (host contract 1.1: MCP servers nexa-kb with 8 tools and nexa-fare with 11, exit codes, tier policy) for hosts such as SYNCA, the Pi TUI with the governed harness runtime, headless print mode for CI, an MCP client (Streamable HTTP, legacy SSE, OAuth), <code class="k">/plan</code> read-only mode and <code class="k">/import claude|codex</code>. NEXA is proprietary software of Fabbi Holdings; <code class="k">scan</code>, <code class="k">rd</code> and other Pro commands need a license (<code class="k">nexa license status</code>). Full notes: CHANGELOG 3.3.0 to 3.7.1.</p>
       </div>
       <div class="item">
