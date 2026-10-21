@@ -10,9 +10,10 @@
 // v<v> → copy site/nexa-dl and site/nexa-agent-dl into the local site root → refuse
 // when a path that is live now would disappear → wrangler pages deploy → read the
 // live site back → delete the staging branch. Preflight refuses a site/ behind the live
-// site, and pages that would advertise a tarball or release that cannot be downloaded. Needs `wrangler` (logged in), `gh`
-// (logged in, write access to the releases repo), curl and git. Config (written by
-// the /deploy command on first use): ~/.config/nexa-dist/deploy.json
+// site, and pages that would advertise a tarball or release that cannot be downloaded.
+// Needs `wrangler` (logged in), `gh` (logged in, write access to the releases repo),
+// curl and git. Config (written by the /deploy command on first use):
+// ~/.config/nexa-dist/deploy.json
 //   { "siteRoot": "<folder deployed to Pages>", "pagesProject": "…", "pagesBranch": "main",
 //     "r2Bucket": "…", "wrangler": "wrangler" }
 import { spawnSync } from "node:child_process";
