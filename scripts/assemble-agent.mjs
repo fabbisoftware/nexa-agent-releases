@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Assemble the NEXA Agent archives: the NEXA CLI bundle (nexa-<v>.tgz, built by
-// scripts/dist/build-bundle.mjs in the NEXA repo) plus an official Node 22 runtime,
+// scripts/release/build-bundle.mjs in the NEXA repo) plus an official Node 22 runtime,
 // one archive per platform, each holding only that platform's native binaries.
 //
 //   node scripts/assemble-agent.mjs --bundle nexa-<v>.tgz --out dist [--version <v>]
@@ -19,8 +19,7 @@ import { spawnSync } from "node:child_process";
 import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, join, relative, resolve } from "node:path";
-import { pathToFileURL } from "node:url";
-import { AGENT_ASSETS, compareVersions, parseArgs, parseSums, readJson, sha256File, writeJson } from "./lib.mjs";
+import { AGENT_ASSETS, compareVersions, isMain, parseArgs, parseSums, readJson, sha256File, writeJson } from "./lib.mjs";
 import { nativeKindOfFile, runsOn } from "./natives.mjs";
 
 const CLI = "@fabbi-product-nexa/nexa-cli";
@@ -131,7 +130,7 @@ export function pruneForTarget(pkgRoot, target, nodeMajor) {
     if (manifest.name !== "better-sqlite3") continue;
     const dir = join(file, "..");
     const prebuilt = join(dir, "lib", "binding", `node-v${abi}-${target.os}-${target.arch}`, "better_sqlite3.node");
-    if (!existsSync(prebuilt)) throw new Error(`${relative(pkgRoot, dir)} has no prebuild for node-v${abi}-${target.os}-${target.arch}; rebuild the bundle with scripts/dist/build-bundle.mjs`);
+    if (!existsSync(prebuilt)) throw new Error(`${relative(pkgRoot, dir)} has no prebuild for node-v${abi}-${target.os}-${target.arch}; rebuild the bundle with scripts/release/build-bundle.mjs`);
     mkdirSync(join(dir, "build", "Release"), { recursive: true });
     renameSync(prebuilt, join(dir, "build", "Release", "better_sqlite3.node"));
     rmSync(join(dir, "lib", "binding"), { recursive: true, force: true });
@@ -200,7 +199,7 @@ export function assembleAgent({ bundle, out, version, node, targets = Object.key
     if (manifest.name !== CLI) throw new Error(`${bundle} is ${manifest.name}, not ${CLI}`);
     if (version && manifest.version !== version) throw new Error(`${bundle} is ${manifest.version}, not ${version}`);
     version = manifest.version;
-    if (!existsSync(join(pkg, "nexa-bundle.json"))) throw new Error(`${bundle} has no nexa-bundle.json: build it with scripts/dist/build-bundle.mjs (NEXA repo), which ships every platform's natives`);
+    if (!existsSync(join(pkg, "nexa-bundle.json"))) throw new Error(`${bundle} has no nexa-bundle.json: build it with scripts/release/build-bundle.mjs (NEXA repo), which ships every platform's natives`);
     const nodeVersion = node ?? latestNode22(mirror, cache);
     const nodeMajor = Number(nodeVersion.split(".")[0]);
     if (!NODE_ABI[nodeMajor]) throw new Error(`Node ${nodeVersion}: no prebuilt better-sqlite3 ABI is known for major ${nodeMajor}`);
@@ -248,7 +247,7 @@ export function assembleAgent({ bundle, out, version, node, targets = Object.key
   }
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
+if (isMain(import.meta.url)) {
   try {
     const args = parseArgs(process.argv.slice(2), { values: ["bundle", "out", "version", "node", "targets", "node-mirror", "cache"] });
     if (!args.bundle || !args.out) throw new Error("usage: assemble-agent.mjs --bundle nexa-<v>.tgz --out <dir> [--version <v>] [--node 22.x.y] [--targets a,b]");

@@ -2,9 +2,10 @@
 // Actions, in claude.ai/code and on the owner's machine with plain Node 22.
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 
 export const readJson = (file) => JSON.parse(readFileSync(file, "utf8"));
 export const writeJson = (file, value) => writeFileSync(file, JSON.stringify(value, null, 2) + "\n");
@@ -115,6 +116,15 @@ export function httpGet(url) {
     return { status: Number(r.stdout) || 0, body: existsSync(join(tmp, "body")) ? readFileSync(join(tmp, "body")) : Buffer.alloc(0) };
   } finally {
     rmSync(tmp, { recursive: true, force: true });
+  }
+}
+
+/** True when the module at `url` is the script node started; node runs a symlinked script from its real path. */
+export function isMain(url) {
+  try {
+    return url === pathToFileURL(realpathSync(process.argv[1])).href;
+  } catch {
+    return false;
   }
 }
 

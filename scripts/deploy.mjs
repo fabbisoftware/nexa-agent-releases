@@ -9,7 +9,8 @@
 // Steps: staged tarball sha256 → R2 (never overwrites) → publish the draft release
 // v<v> → copy site/nexa-dl and site/nexa-agent-dl into the local site root → refuse
 // when a path that is live now would disappear → wrangler pages deploy → read the
-// live site back → delete the staging branch. Needs `wrangler` (logged in), `gh`
+// live site back → delete the staging branch. Preflight refuses a site/ behind the live
+// site, and pages that would advertise a tarball or release that cannot be downloaded. Needs `wrangler` (logged in), `gh`
 // (logged in, write access to the releases repo), curl and git. Config (written by
 // the /deploy command on first use): ~/.config/nexa-dist/deploy.json
 //   { "siteRoot": "<folder deployed to Pages>", "pagesProject": "…", "pagesBranch": "main",
@@ -18,9 +19,9 @@ import { spawnSync } from "node:child_process";
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
 import { dirname, join, relative, resolve } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 import { assembleAgent } from "./assemble-agent.mjs";
-import { AGENT_ASSETS, RELEASES_REPO, SITE_BASE, TGZ_BASE, httpGet, parseArgs, parseSums, readJson, sha256, sha256File, writeJson } from "./lib.mjs";
+import { AGENT_ASSETS, RELEASES_REPO, SITE_BASE, TGZ_BASE, httpGet, isMain, parseArgs, parseSums, readJson, sha256, sha256File, writeJson } from "./lib.mjs";
 import { checkSite, driftFrom, liveSite, localSite } from "./render-site.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -105,6 +106,38 @@ export function syncPlan(site, siteRoot, managed = MANAGED) {
   return plan;
 }
 
+/**
+ * Downloads the pages would advertise that are not there: the latest nexa-dl tarball
+ * (on R2, with the sha256 versions.json lists) and the latest NEXA Agent release
+ * (published, its SHA256SUMS matching releases.json). The version this run uploads
+ * (`uploads`) or publishes (`publishes`) is checked by its own step instead.
+ */
+export function unservedDownloads(site, { uploads = null, publishes = null, get = httpGet } = {}) {
+  const problems = [];
+  const versions = readJson(join(site, "nexa-dl", "versions.json"));
+  const cli = versions.versions.find((x) => x.version === versions.latest);
+  if (cli && cli.version !== uploads) {
+    const url = `${TGZ_BASE}/nexa-${cli.version}.tgz`;
+    const res = get(url);
+    if (res.status !== 200) problems.push(`nexa-dl advertises ${cli.version}, but ${url} answers HTTP ${res.status}`);
+    else if (sha256(res.body) !== cli.sha256) problems.push(`${url} is not the tarball nexa-dl/versions.json lists (sha256 ${sha256(res.body).slice(0, 12)}…, want ${cli.sha256.slice(0, 12)}…)`);
+  }
+  const agentFile = join(site, "nexa-agent-dl", "releases.json");
+  const agent = existsSync(agentFile) ? readJson(agentFile) : { latest: null, releases: [] };
+  const rel = agent.releases.find((r) => r.version === agent.latest);
+  if (rel && rel.version !== publishes) {
+    const url = `https://github.com/${RELEASES_REPO}/releases/download/v${rel.version}/SHA256SUMS`;
+    const res = get(url);
+    if (res.status !== 200) problems.push(`nexa-agent-dl advertises ${rel.version}, but release v${rel.version} is not published (${url}: HTTP ${res.status})`);
+    else {
+      const sums = parseSums(res.body.toString("utf8"));
+      const bad = rel.assets.filter((a) => sums.get(a.name) !== a.sha256).map((a) => a.name);
+      if (bad.length) problems.push(`release v${rel.version}: SHA256SUMS differs from nexa-agent-dl/releases.json for ${bad.join(", ")}`);
+    }
+  }
+  return problems;
+}
+
 function loadConfig(file) {
   if (!existsSync(file)) throw new Error(`no deploy config at ${file}; run /deploy once so it can set siteRoot, pagesProject and r2Bucket`);
   const cfg = { pagesBranch: "main", wrangler: "wrangler", ...readJson(file) };
@@ -131,7 +164,11 @@ export async function deploy(opts) {
   const main = sh("git", ["-C", ROOT, "rev-parse", "origin/main"]).stdout.trim();
   if (head !== main) throw new Error(`HEAD ${head.slice(0, 7)} is not origin/main ${main.slice(0, 7)}: git checkout main && git pull --ff-only`);
   const stagingRef = `origin/staging/v${v}`;
-  const hasStaging = sh("git", ["-C", ROOT, "fetch", "-q", "origin", `staging/v${v}:refs/remotes/origin/staging/v${v}`], { allowFail: true }).status === 0;
+  // ls-remote exits 2 when the branch does not exist; anything else is a failure, never "no staging".
+  const remote = sh("git", ["-C", ROOT, "ls-remote", "--exit-code", "--heads", "origin", `staging/v${v}`], { allowFail: true });
+  if (remote.status !== 0 && remote.status !== 2) throw new Error(`cannot read origin (git ls-remote exited ${remote.status}): ${(remote.stderr ?? "").trim()}`);
+  const hasStaging = remote.status === 0;
+  if (hasStaging) sh("git", ["-C", ROOT, "fetch", "-q", "origin", `staging/v${v}:refs/remotes/origin/staging/v${v}`]);
   const staging = hasStaging ? JSON.parse(sh("git", ["-C", ROOT, "show", `${stagingRef}:staging/staging.json`]).stdout) : null;
   const problems = checkSite(SITE);
   if (problems.length) throw new Error(`site/ is inconsistent:\n  ${problems.join("\n  ")}`);
@@ -147,9 +184,14 @@ export async function deploy(opts) {
   const agentData = existsSync(join(SITE, "nexa-agent-dl", "releases.json")) ? readJson(join(SITE, "nexa-agent-dl", "releases.json")) : { releases: [] };
   const agentEntry = agentData.releases.find((x) => x.version === v);
   const doCli = !opts.skipCli && Boolean(staging?.cli);
-  const doAgent = !opts.skipAgent && Boolean(staging?.agent || agentEntry);
+  const doAgent = !opts.skipAgent && Boolean((staging?.agent && !staging?.dry_run) || agentEntry);
   if (doCli && !cliEntry) throw new Error(`staging says cli, but site/nexa-dl/versions.json has no ${v}; run /publish-cli ${v} again`);
   say(`  version ${v}: cli=${doCli ? "yes" : "no"} agent=${doAgent ? "yes" : "no"} pages=${opts.skipPages ? "no" : "yes"} staging=${hasStaging ? stagingRef : "(none)"}`);
+  if (!opts.skipPages) {
+    const unserved = unservedDownloads(SITE, { uploads: doCli ? v : null, publishes: doAgent ? v : null });
+    if (unserved.length) throw new Error(`the pages would advertise downloads that are not there:\n  ${unserved.join("\n  ")}\nStage that version again (/publish-cli, /publish-agent) and deploy it, or deploy with --skip-pages.`);
+    say("  downloads guard: every version the pages advertise is downloadable");
+  }
 
   const work = mkdtempSync(join(tmpdir(), "nexa-deploy-"));
   const report = [];
@@ -264,7 +306,7 @@ export async function deploy(opts) {
   }
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
+if (isMain(import.meta.url)) {
   try {
     const args = parseArgs(process.argv.slice(2), { flags: ["dry-run", "smoke", "assemble-local", "skip-cli", "skip-agent", "skip-pages", "allow-remove"], values: ["version", "config"] });
     if (!args.version) throw new Error("usage: deploy.mjs --version <v> [--dry-run] [--smoke] …");

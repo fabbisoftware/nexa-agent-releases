@@ -3,7 +3,8 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { after, before, describe, it } from "node:test";
-import { linkedPaths, livePaths, missingLocally, pathToFile, snapshot, syncPlan } from "../scripts/deploy.mjs";
+import { linkedPaths, livePaths, missingLocally, pathToFile, snapshot, syncPlan, unservedDownloads } from "../scripts/deploy.mjs";
+import { sha256 } from "../scripts/lib.mjs";
 
 const BASE = "https://downloads.agilekit.cc";
 
@@ -70,5 +71,51 @@ describe("deploy guard", () => {
     it("snapshots files with their sha256, skipping dotfiles", () => {
       assert.deepEqual(Object.keys(snapshot(root)), ["dwb-dl/index.html", "nexa-dl/index.html", "nexa-dl/install.sh", "nexa-dl/nexa-old.tgz"]);
     });
+  });
+});
+
+describe("downloads guard (the pages never advertise what cannot be downloaded)", () => {
+  let site;
+  const TGZ = Buffer.from("the 3.8.0 tarball");
+  const SUMS = `${"c".repeat(64)}  nexa-agent-linux-x64.tar.gz\n`;
+  const TGZ_URL = "https://dl.agilekit.cc/nexa-3.8.0.tgz";
+  const SUMS_URL = "https://github.com/fabbisoftware/nexa-agent-releases/releases/download/v3.8.0/SHA256SUMS";
+  const server = (pages) => {
+    const asked = [];
+    const get = (url) => {
+      asked.push(url);
+      return url in pages ? { status: 200, body: Buffer.from(pages[url]) } : { status: 404, body: Buffer.alloc(0) };
+    };
+    return { get, asked };
+  };
+  before(() => {
+    site = join(mkdtempSync(join(tmpdir(), "nexa-unserved-")), "site");
+    mkdirSync(join(site, "nexa-dl"), { recursive: true });
+    mkdirSync(join(site, "nexa-agent-dl"), { recursive: true });
+    writeFileSync(join(site, "nexa-dl", "versions.json"), JSON.stringify({ latest: "3.8.0", versions: [{ version: "3.8.0", sha256: sha256(TGZ) }, { version: "3.7.1", sha256: "a".repeat(64) }] }));
+    writeFileSync(join(site, "nexa-agent-dl", "releases.json"), JSON.stringify({ latest: "3.8.0", releases: [{ version: "3.8.0", assets: [{ name: "nexa-agent-linux-x64.tar.gz", sha256: "c".repeat(64) }] }] }));
+  });
+  after(() => rmSync(join(site, ".."), { recursive: true, force: true }));
+
+  it("passes when the latest tarball and the latest release are both downloadable", () => {
+    assert.deepEqual(unservedDownloads(site, { get: server({ [TGZ_URL]: TGZ, [SUMS_URL]: SUMS }).get }), []);
+  });
+
+  it("refuses a nexa-dl page whose latest tarball is not on R2 (a lost staging branch)", () => {
+    assert.deepEqual(unservedDownloads(site, { get: server({ [SUMS_URL]: SUMS }).get }), [`nexa-dl advertises 3.8.0, but ${TGZ_URL} answers HTTP 404`]);
+    assert.match(unservedDownloads(site, { get: server({ [TGZ_URL]: "other bytes", [SUMS_URL]: SUMS }).get })[0], /is not the tarball nexa-dl\/versions.json lists/);
+  });
+
+  it("refuses an agent page whose latest release is still a draft, or has other archives", () => {
+    assert.deepEqual(unservedDownloads(site, { get: server({ [TGZ_URL]: TGZ }).get }), [`nexa-agent-dl advertises 3.8.0, but release v3.8.0 is not published (${SUMS_URL}: HTTP 404)`]);
+    assert.deepEqual(unservedDownloads(site, { get: server({ [TGZ_URL]: TGZ, [SUMS_URL]: `${"d".repeat(64)}  nexa-agent-linux-x64.tar.gz\n` }).get }), [
+      "release v3.8.0: SHA256SUMS differs from nexa-agent-dl/releases.json for nexa-agent-linux-x64.tar.gz",
+    ]);
+  });
+
+  it("leaves the version this run uploads or publishes to that step", () => {
+    const { get, asked } = server({});
+    assert.deepEqual(unservedDownloads(site, { uploads: "3.8.0", publishes: "3.8.0", get }), []);
+    assert.deepEqual(asked, []);
   });
 });

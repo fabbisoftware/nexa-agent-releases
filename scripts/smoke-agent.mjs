@@ -14,8 +14,8 @@ import { createReadStream, existsSync, mkdtempSync, readdirSync, rmSync, statSyn
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { dirname, join, normalize, resolve } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
-import { parseArgs, readJson, SITE_BASE } from "./lib.mjs";
+import { fileURLToPath } from "node:url";
+import { isMain, parseArgs, readJson, SITE_BASE } from "./lib.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const WIN = process.platform === "win32";
@@ -125,7 +125,7 @@ export async function smokeAgent({ dist, version, live = false }) {
   }
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
+if (isMain(import.meta.url)) {
   try {
     const args = parseArgs(process.argv.slice(2), { flags: ["live"], values: ["dist", "version"] });
     if (!args.live && (!args.dist || !args.version)) throw new Error("usage: smoke-agent.mjs --dist <dir> --version <v> | --live [--version <v>]");

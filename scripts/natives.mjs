@@ -1,5 +1,5 @@
 // Which platform a native file (addon or executable) runs on, read from its header.
-// Copy of scripts/dist/lib/natives.mjs in the NEXA repo (the two repos share no code):
+// Copy of scripts/release/lib/natives.mjs in the NEXA repo (the two repos share no code):
 // the agent assembler uses it to keep only the target platform's binaries in an archive.
 import { closeSync, openSync, readSync } from "node:fs";
 

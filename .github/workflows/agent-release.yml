@@ -165,7 +165,19 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.ref }}
+          fetch-depth: 2
+          sparse-checkout: staging/staging.json
+          sparse-checkout-cone-mode: false
       - name: Delete the dry-run staging branch
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh api -X DELETE "repos/${{ github.repository }}/git/refs/heads/${{ needs.plan.outputs.ref }}"
+        run: |
+          # A dry run on top of a real /publish-cli staging must not take that tarball with it.
+          if git show HEAD~1:staging/staging.json 2>/dev/null | node -e 'try { const s = JSON.parse(require("fs").readFileSync(0, "utf8")); process.exit(s.cli && !s.dry_run ? 0 : 1) } catch { process.exit(1) }'; then
+            echo "::warning::${{ needs.plan.outputs.ref }} held a staged CLI tarball before this dry run; branch kept"
+            exit 0
+          fi
+          gh api -X DELETE "repos/${{ github.repository }}/git/refs/heads/${{ needs.plan.outputs.ref }}"

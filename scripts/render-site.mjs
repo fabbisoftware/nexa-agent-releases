@@ -11,7 +11,7 @@
 // A version already listed is never rewritten: publish a new version instead.
 import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 import {
   AGENT_ASSETS,
   RELEASES_REPO,
@@ -21,6 +21,7 @@ import {
   escapeHtml,
   formatSize,
   httpGet,
+  isMain,
   isVersion,
   markdownToHtml,
   parseArgs,
@@ -305,7 +306,7 @@ function main(argv) {
   return problems.length ? 1 : 0;
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
+if (isMain(import.meta.url)) {
   try {
     process.exit(main(process.argv.slice(2)));
   } catch (err) {

@@ -1,5 +1,6 @@
 import { strict as assert } from "node:assert";
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { after, before, describe, it } from "node:test";
@@ -52,6 +53,18 @@ describe("render-site", () => {
 
   it("the committed site is consistent", () => {
     assert.deepEqual(checkSite(join(ROOT, "site")), []);
+  });
+
+  it("runs when started through a symlinked path (node runs the real path; a silent exit 0 would hide every check)", () => {
+    const tmp = mkdtempSync(join(tmpdir(), "nexa-link-"));
+    try {
+      symlinkSync(join(ROOT, "scripts"), join(tmp, "scripts"), process.platform === "win32" ? "junction" : "dir");
+      const r = spawnSync(process.execPath, [join(tmp, "scripts", "render-site.mjs"), "check"], { encoding: "utf8" });
+      assert.equal(r.status, 0, r.stderr);
+      assert.match(r.stdout, /site is consistent/);
+    } finally {
+      rmSync(tmp, { recursive: true, force: true });
+    }
   });
 
   it("renders a CLI version into every place that names it, and nothing else changes", () => {
