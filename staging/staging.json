@@ -1,0 +1,15 @@
+{
+  "version": "3.10.1",
+  "tag": "v3.10.1",
+  "commit": "197fbc7dcb4ff2aaf4db35828fdf79ecd7586e18",
+  "built_at": "2026-10-28T08:26:16.085Z",
+  "bundle": {
+    "file": "nexa-3.10.1.tgz",
+    "sha256": "411918fa7243d5738d10b248ab8800986ebbe4f17f4ef564ccfe0bf3cb854c4a",
+    "size": 86203391
+  },
+  "cli": true,
+  "agent": true,
+  "dry_run": false,
+  "notes": "The BD/DD generators (`nexa bd create-*`, `nexa dd create-*`) now refuse to overwrite a document that is in customer review, approved or done. Since 3.8.0: `nexa tui --print` answers in about half the time, `nexa tui --trust-project` opens the chat directly when your API key is in the environment, and new projects use a free OpenRouter model that still exists. The BA skills now have `si-*` names; old names keep working, and `nexa profile sync` removes the old copies."
+}
