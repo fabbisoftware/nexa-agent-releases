@@ -1,6 +1,44 @@
 {
-  "latest": "3.8.0",
+  "latest": "3.10.1",
   "releases": [
+    {
+      "version": "3.10.1",
+      "date": "2026-10-28",
+      "node": "22.23.4",
+      "assets": [
+        {
+          "name": "nexa-agent-darwin-arm64.tar.gz",
+          "target": "darwin-arm64",
+          "size": 89912062,
+          "sha256": "7964c60a749c3f4ebfe6d5660a7269da8b75794cfee20dfadf70d913e22f0bca"
+        },
+        {
+          "name": "nexa-agent-darwin-x64.tar.gz",
+          "target": "darwin-x64",
+          "size": 91382032,
+          "sha256": "c85cdb0387b784a6d46c7ff06784b1a95ec8d05f941e4509d119ebe748c84299"
+        },
+        {
+          "name": "nexa-agent-linux-x64.tar.gz",
+          "target": "linux-x64",
+          "size": 96255439,
+          "sha256": "9741939a6f0c9af6316f0e6aa2e6ee40d1cc9e15ae2ab89ac0528bebec2aa7ab"
+        },
+        {
+          "name": "nexa-agent-linux-arm64.tar.gz",
+          "target": "linux-arm64",
+          "size": 95523421,
+          "sha256": "c185d764695fc2648fde6241a54d718d41b61b80419e51a9d38114e5d33ceb23"
+        },
+        {
+          "name": "nexa-agent-windows-x64.zip",
+          "target": "win32-x64",
+          "size": 104868758,
+          "sha256": "61100bca48cf33df23e90c0badee16ae3e0ad3af3a9839d68a399db40f05af53"
+        }
+      ],
+      "notes_html": "<p>The BD/DD generators (<code class=\"k\">nexa bd create-*</code>, <code class=\"k\">nexa dd create-*</code>) now refuse to overwrite a document that is in customer review, approved or done. Since 3.8.0: <code class=\"k\">nexa tui --print</code> answers in about half the time, <code class=\"k\">nexa tui --trust-project</code> opens the chat directly when your API key is in the environment, and new projects use a free OpenRouter model that still exists. The BA skills now have <code class=\"k\">si-*</code> names; old names keep working, and <code class=\"k\">nexa profile sync</code> removes the old copies.</p>"
+    },
     {
       "version": "3.8.0",
       "date": "2026-10-21",
