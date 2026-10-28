@@ -11,7 +11,7 @@ set -euo pipefail
 
 BASE_URL="${NEXA_DL_BASE_URL:-https://downloads.agilekit.cc/nexa-dl}"   # Pages: small files
 TGZ_BASE="${NEXA_DL_TGZ_BASE:-https://dl.agilekit.cc}"                 # R2: tarball
-DEFAULT_VERSION="3.8.0"
+DEFAULT_VERSION="3.10.1"
 
 c_reset=$'\033[0m'; c_red=$'\033[31m'; c_grn=$'\033[32m'; c_dim=$'\033[2m'
 pass() { printf '%s✓%s %s\n' "$c_grn" "$c_reset" "$*"; }

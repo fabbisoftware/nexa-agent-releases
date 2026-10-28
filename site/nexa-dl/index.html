@@ -88,7 +88,7 @@ footer{border-top:1px solid var(--line);margin-top:54px;padding:26px 0 64px}
 
   <header class="hero">
     <p class="eyebrow">NEXA CLI</p>
-    <h1>nexa<span class="pill"><!--nexa:version-->v3.8.0<!--/nexa:version--></span></h1>
+    <h1>nexa<span class="pill"><!--nexa:version-->v3.10.1<!--/nexa:version--></span></h1>
     <p class="lede">A self-contained AI coding agent for <b>Japanese SI delivery</b>. Scaffolds the full six-phase SDLC, drives requirement and design generation, validation gates, and a FARE knowledge base. One tarball - no monorepo, no registry auth.</p>
     <div class="phases">
       <span>intake</span><span class="arw">→</span><span>RD</span><span class="arw">→</span><span>BD</span><span class="arw">→</span><span>DD</span><span class="arw">→</span><span>coding</span><span class="arw">→</span><span>delivery</span>
@@ -105,7 +105,7 @@ footer{border-top:1px solid var(--line);margin-top:54px;padding:26px 0 64px}
     <p class="note">Or install the tarball directly with npm:</p>
     <div class="cmd">
       <div class="cmd-head"><span class="cmd-tag">npm</span><button class="copy" type="button">Copy</button></div>
-      <pre><code><span class="p">$</span>npm i -g <!--nexa:tgz-url-->https://dl.agilekit.cc/nexa-3.8.0.tgz<!--/nexa:tgz-url--></code></pre>
+      <pre><code><span class="p">$</span>npm i -g <!--nexa:tgz-url-->https://dl.agilekit.cc/nexa-3.10.1.tgz<!--/nexa:tgz-url--></code></pre>
     </div>
     <p>Then verify:</p>
     <div class="cmd">
@@ -172,14 +172,14 @@ footer{border-top:1px solid var(--line);margin-top:54px;padding:26px 0 64px}
     <ul class="reqs">
       <li><b>Node 22.19+</b> and npm - the installer checks and stops with a clear message otherwise.</li>
       <!--nexa:natives-->
-      <li><b>macOS or Linux.</b> A prebuilt <code class="k">better-sqlite3</code> is bundled for the knowledge base (<code class="k">nexa kb</code> / <code class="k">nexa scan</code>). <code class="k">init</code>, <code class="k">status</code>, <code class="k">doctor</code> work regardless.</li>
-      <li><b>Mismatched Node ABI</b> (e.g. Node 24/26) and a native-module error from <code class="k">nexa kb</code>? Rebuild the bundled engine once - source ships too, so it works offline:
+      <li><b>macOS or Linux</b>, x64 or arm64. <code class="k">better-sqlite3</code> for the knowledge base (<code class="k">nexa kb</code> / <code class="k">nexa scan</code>) ships prebuilt for each of them, for Node 22 and Node 24, so nothing compiles at install time. Windows x64 gets its prebuilt addon too; the TUI is not supported on Windows yet.</li>
+      <li><b>Another Node version</b> and a native-module error from <code class="k">nexa kb</code>? Fetch the addon for your Node once:
         <div class="cmd">
           <div class="cmd-head"><span class="cmd-tag">only if kb reports a native error</span><button class="copy" type="button">Copy</button></div>
-          <pre><code><span class="p">$</span>npm rebuild better-sqlite3 --prefix "$(npm root -g)/@fabbi-product-nexa/nexa-cli"</code></pre>
+          <pre><code><span class="p">$</span>cd "$(npm root -g)/@fabbi-product-nexa/nexa-cli/node_modules/better-sqlite3" &amp;&amp; npx --yes prebuild-install@7.1.3</code></pre>
         </div>
       </li>
-      <!--/nexa:natives-->
+<!--/nexa:natives-->
       <li>No GitHub or npm registry auth - all 15 internal packages are bundled into the tarball.</li>
       <li><b>No Node on the machine?</b> <a href="/nexa-agent-dl/">NEXA Agent</a> is the same NEXA with its own Node runtime: one installer for macOS, Linux and Windows, no npm.</li>
     </ul>
@@ -190,7 +190,11 @@ footer{border-top:1px solid var(--line);margin-top:54px;padding:26px 0 64px}
     <div class="log">
 <!--nexa:changelog-->
       <div class="item">
-        <span class="v">3.8.0</span><span class="tag-new">latest</span>
+        <span class="v">3.10.1</span><span class="tag-new">latest</span>
+        <p>The BD/DD generators (<code class="k">nexa bd create-*</code>, <code class="k">nexa dd create-*</code>) now refuse to overwrite a document that is in customer review, approved or done. Since 3.8.0: <code class="k">nexa tui --print</code> answers in about half the time, <code class="k">nexa tui --trust-project</code> opens the chat directly when your API key is in the environment, and new projects use a free OpenRouter model that still exists. The BA skills now have <code class="k">si-*</code> names; old names keep working, and <code class="k">nexa profile sync</code> removes the old copies.</p>
+      </div>
+      <div class="item">
+        <span class="v">3.8.0</span>
         <p>Runs TUI sub-agents in parallel, with git worktree isolation for writing children and builtin <code class="k">reviewer</code> and <code class="k">worker</code> agents, and makes the first TUI turn faster. New skills: <code class="k">prr</code>, <code class="k">nexa-audit-readiness</code>, <code class="k">pr-review</code> and <code class="k">synca-playbook</code>. <code class="k">nexa init</code> now ships the scripts the shipped skills run (the zflow <code class="k">--ux-review</code> route and vehicle resolver, the nexa-doc-map build scripts) and merges the zflow hooks into an existing <code class="k">.claude/settings.json</code>. Opt-in SYNCA MCP wiring: <code class="k">nexa init --synca-mcp-url</code>.</p>
       </div>
       <div class="item">

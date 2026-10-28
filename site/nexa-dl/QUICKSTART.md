@@ -11,7 +11,7 @@ downstream flow with exact command signatures; items QA flagged as workflow gaps
 ```bash
 # 0. Install (or update - idempotent)
 curl -fsSL https://downloads.agilekit.cc/nexa-dl/install.sh | bash
-nexa --version            # 3.8.0
+nexa --version            # 3.10.1
 nexa doctor               # environment / gate pre-flight (optional external tools may warn)
 
 # 1. Activate the signed license supplied by your NEXA maintainer
@@ -100,20 +100,16 @@ curl -fsSL https://downloads.agilekit.cc/nexa-dl/verify.sh | bash
 ## Notes
 
 <!-- nexa:natives -->
-- **Knowledge Base engine** (`better-sqlite3`) ships a prebuilt addon for **macOS arm64 + Node 22**
-  only. On Windows, Intel macOS or Linux, `nexa kb ...` fails with "not a valid Win32 application"
-  (or a similar load error) until you fetch the addon for your platform once:
+- **Knowledge Base engine** (`better-sqlite3`) ships prebuilt for macOS (arm64, x64), Linux
+  (x64, arm64, glibc) and Windows x64, for Node 22 and Node 24. Nothing compiles at install time.
+  On another Node version `nexa kb ...` fails with a load error until you fetch the addon once:
 
   ```bash
   cd "$(npm root -g)/@fabbi-product-nexa/nexa-cli/node_modules/better-sqlite3"
   npx --yes prebuild-install@7.1.3
   ```
-
-  Repeat this after every `nexa upgrade`.
-- **Windows:** plain `npm i -g <tgz>` stops with `gyp ERR!` when Visual Studio Build Tools are
-  missing. Install with `npm i -g --ignore-scripts https://dl.agilekit.cc/nexa-<ver>.tgz`, then run
-  the `prebuild-install` step above (PowerShell: `cd "$(npm root -g)\@fabbi-product-nexa\nexa-cli\node_modules\better-sqlite3"`).
-  Verified on Windows 10 with Node 22.21.1 and 3.2.0-alpha.24.
+- **Windows:** `npm i -g <tgz>` needs no build tools (no install script runs in the tarball).
+  The TUI is not supported on Windows yet.
 <!-- /nexa:natives -->
 - `nexa rd` / `nexa bd` now exit non-zero if no documents are generated (so CI catches failures).
 - Diagram stages (`mmdc`, `drawio`) and audit gates (`openpyxl`, LibreOffice) need external tools.
