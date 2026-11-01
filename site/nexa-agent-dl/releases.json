@@ -1,6 +1,44 @@
 {
-  "latest": "3.10.1",
+  "latest": "3.10.2",
   "releases": [
+    {
+      "version": "3.10.2",
+      "date": "2026-11-01",
+      "node": "22.23.4",
+      "assets": [
+        {
+          "name": "nexa-agent-darwin-arm64.tar.gz",
+          "target": "darwin-arm64",
+          "size": 89917002,
+          "sha256": "e5c70513644caf9283fea15e08dd11ca21b00926ce3ca1ec9af01f6899343143"
+        },
+        {
+          "name": "nexa-agent-darwin-x64.tar.gz",
+          "target": "darwin-x64",
+          "size": 91387411,
+          "sha256": "2315a41559386ea85cf47dfc99e436d305b595b4a6841e1a6d0c8d60bf9e733e"
+        },
+        {
+          "name": "nexa-agent-linux-x64.tar.gz",
+          "target": "linux-x64",
+          "size": 96254752,
+          "sha256": "4373f02deb7ea0372534522063bfd1c6b13aefaebe45263c05f4147c7a8606a4"
+        },
+        {
+          "name": "nexa-agent-linux-arm64.tar.gz",
+          "target": "linux-arm64",
+          "size": 95528899,
+          "sha256": "301b4db4cb96dbec382b5d933ce4c9cc4bc0028e3bd54ee464578d044e75425a"
+        },
+        {
+          "name": "nexa-agent-windows-x64.zip",
+          "target": "win32-x64",
+          "size": 104876205,
+          "sha256": "c67779e1ac630dbde8fcf0000bb7d12bd433d9879a845807e987af18b907dc12"
+        }
+      ],
+      "notes_html": "<p><code class=\"k\">nexa update &lt;version&gt;</code> installs exactly the requested version, including downgrades, and verifies its metadata and tarball before changing the installation. The agent reports project-defined gates and treats custom artifact-matrix layouts as low-confidence phase hints. Planning skills distinguish the approval lane, planning depth and shape, review scale, and worker grade from the license tier.</p>"
+    },
     {
       "version": "3.10.1",
       "date": "2026-10-28",
