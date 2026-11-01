@@ -25,6 +25,11 @@ describe("deploy guard", () => {
     assert.equal(kept(pathToFile("/dwb-dl/dwb-0.2.2.tgz")), false);
   });
 
+  it("ignores the /cdn-cgi/ scripts Cloudflare injects into served pages", () => {
+    const html = `<a href="install.sh">i</a><script src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>`;
+    assert.deepEqual([...linkedPaths(`${BASE}/nexa-agent-dl/`, html)], ["/nexa-agent-dl/install.sh"]);
+  });
+
   it("maps URL paths to the files Pages serves", () => {
     assert.equal(pathToFile("/nexa-dl/"), "nexa-dl/index.html");
     assert.equal(pathToFile("/dwb-dl/dwb-0.2.2.tgz"), "dwb-dl/dwb-0.2.2.tgz");
