@@ -80,6 +80,9 @@ export function livePaths(get = httpGet, entries = LIVE_ENTRIES, siteBase = SITE
   return [...found].sort();
 }
 
+/** A live path is kept when its file is there, or, for a folder URL without the trailing slash, its index.html. */
+export const keptBy = (files) => (f) => files.has(f) || files.has(`${f}/index.html`);
+
 export const missingLocally = (paths, siteRoot) => paths.map(pathToFile).filter((f) => !existsSync(join(siteRoot, f)));
 
 function* walk(dir, base = dir) {
@@ -262,7 +265,8 @@ export async function deploy(opts) {
       const live = livePaths();
       const lastFile = join(dirname(opts.config ?? CONFIG), `last-deploy-${cfg.pagesProject}.json`);
       const willHave = new Set([...Object.keys(snapshot(cfg.siteRoot)), ...plan.map((p) => p.file)]);
-      const missing = live.map(pathToFile).filter((f) => !willHave.has(f));
+      const kept = keptBy(willHave);
+      const missing = live.map(pathToFile).filter((f) => !kept(f));
       if (missing.length) throw new Error(`deploying ${cfg.siteRoot} would take these live paths offline:\n  ${missing.join("\n  ")}\nPoint siteRoot at the folder that holds the whole site.`);
       say(`  live-path guard: ${live.length} live paths, all present`);
       if (existsSync(lastFile)) {

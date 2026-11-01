@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { after, before, describe, it } from "node:test";
-import { linkedPaths, livePaths, missingLocally, pathToFile, snapshot, syncPlan, unservedDownloads } from "../scripts/deploy.mjs";
+import { keptBy, linkedPaths, livePaths, missingLocally, pathToFile, snapshot, syncPlan, unservedDownloads } from "../scripts/deploy.mjs";
 import { sha256 } from "../scripts/lib.mjs";
 
 const BASE = "https://downloads.agilekit.cc";
@@ -14,6 +14,15 @@ describe("deploy guard", () => {
       <a href="https://github.com/x/y">gh</a><pre>npm i -g https://downloads.agilekit.cc/dwb-dl/dwb-0.2.2.tgz</pre>
       <a href="QUICKSTART.md#top">q</a>`;
     assert.deepEqual([...linkedPaths(`${BASE}/nexa-dl/`, html)].sort(), ["/", "/dwb-dl/", "/dwb-dl/dwb-0.2.2.tgz", "/nexa-dl/QUICKSTART.md", "/nexa-dl/install.sh"]);
+  });
+
+  it("keeps a folder URL written without the trailing slash when its index.html is deployed", () => {
+    const kept = keptBy(new Set(["dwb-dl/index.html", "nexa-dl/install.sh"]));
+    assert.equal(kept(pathToFile("/dwb-dl")), true);
+    assert.equal(kept(pathToFile("/dwb-dl/")), true);
+    assert.equal(kept(pathToFile("/nexa-dl/install.sh")), true);
+    assert.equal(kept(pathToFile("/nexa-dl")), false);
+    assert.equal(kept(pathToFile("/dwb-dl/dwb-0.2.2.tgz")), false);
   });
 
   it("maps URL paths to the files Pages serves", () => {
