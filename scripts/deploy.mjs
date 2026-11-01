@@ -54,6 +54,8 @@ export function linkedPaths(pageUrl, text, siteBase = SITE_BASE) {
       continue;
     }
     if (url.origin !== new URL(siteBase).origin) continue;
+    // Cloudflare injects /cdn-cgi/ (email obfuscation, analytics); Pages never serves it from the site folder.
+    if (url.pathname.startsWith("/cdn-cgi/")) continue;
     out.add(url.pathname);
   }
   return out;
