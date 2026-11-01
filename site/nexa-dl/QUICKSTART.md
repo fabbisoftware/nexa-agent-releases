@@ -104,6 +104,10 @@ For a first install, or when updating from an older CLI that does not support th
 positional version, use the manual `npm i -g <tgz>` procedure on the download page
 (Windows), or re-run the installer (macOS / Linux):
 
+**Windows 3.10.1:** its old updater cannot launch npm, so even plain `nexa update`
+fails. Install 3.10.2 or newer manually once to bootstrap the fixed updater; do not
+use `nexa update <version>` on 3.10.1, which ignores the positional version.
+
 ```bash
 curl -fsSL https://downloads.agilekit.cc/nexa-dl/install.sh | bash
 curl -fsSL https://downloads.agilekit.cc/nexa-dl/install.sh | bash -s -- --version 3.10.1
