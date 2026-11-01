@@ -58,7 +58,7 @@ nexa doc status                    # matrix summary
 - Keep the `.license` file private. Do not commit it, upload it, paste it into tickets, or expose it in logs.
 - `nexa license status` should report `Revalidation: ✓ valid` and, while online, `Revocation: ✓ not revoked`.
 - `Revocation: ? offline - using cached verdict` means local signature and expiry checks passed, but current revocation status was not confirmed. Restore network access and run status again.
-- `nexa upgrade` and reinstalls under the same user and `HOME` preserve `~/.nexa/license.json`. Licenses signed by the verifier retired before alpha.22 must still be reissued and activated again.
+- `nexa update` and reinstalls under the same user and `HOME` preserve `~/.nexa/license.json`. Licenses signed by the verifier retired before alpha.22 must still be reissued and activated again.
 - On a new machine or under a different `HOME`, securely transfer the original `.license` file and activate again.
 - Expired licenses stop authorizing licensed commands immediately. Revoked licenses stop after the revoked verdict is fetched and cached; while offline, NEXA uses the last cached revocation verdict. Obtain a renewed or reissued license from the NEXA maintainer.
 - Direct `nexa license activate 'NEXA-<key>'` is supported, but can store the license in shell history. Prefer the file-based procedure above.
@@ -85,14 +85,28 @@ nexa test create-from-dd --dd-id <DD-ID>
 
 ## Update / pin / verify
 
+After the first install, use the built-in updater (3.10.2+) on macOS, Linux or
+Windows (PowerShell). `nexa update` installs the latest release; `nexa update <version>`
+installs that exact published version, including a downgrade. The updater verifies
+the tarball's SHA256 before replacing the installed CLI. An unknown version fails
+without removing the current installation.
+
 ```bash
-# update in place (alpha.12+): built-in self-updater
-nexa upgrade
-nexa upgrade --check                    # current vs latest, no install
-nexa upgrade --version 3.2.0-alpha.11   # pin / roll back
-# or (any version): re-run the installer, idempotent
+# update in place (the same nexa commands work in PowerShell)
+nexa update                            # install latest from versions.json
+nexa update 3.10.1                     # pin / roll back to a published version
+nexa update 3.10.1 --check --json       # preview the target/action, no install
+nexa --version                         # verify the installed version
+# legacy spellings remain supported: nexa upgrade / nexa update --version 3.10.1
+```
+
+For a first install, or when updating from an older CLI that does not support the
+positional version, use the manual `npm i -g <tgz>` procedure on the download page
+(Windows), or re-run the installer (macOS / Linux):
+
+```bash
 curl -fsSL https://downloads.agilekit.cc/nexa-dl/install.sh | bash
-curl -fsSL https://downloads.agilekit.cc/nexa-dl/install.sh | bash -s -- --version 3.2.0-alpha.10
+curl -fsSL https://downloads.agilekit.cc/nexa-dl/install.sh | bash -s -- --version 3.10.1
 # smoke-test a published version in a throwaway prefix (no global changes)
 curl -fsSL https://downloads.agilekit.cc/nexa-dl/verify.sh | bash
 ```

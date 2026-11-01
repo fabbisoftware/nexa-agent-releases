@@ -91,6 +91,10 @@ describe("render-site", () => {
     assert.equal(manifest.size, 61234567);
     assert.match(readFileSync(join(site, "nexa-dl", "install.sh"), "utf8"), new RegExp(`^DEFAULT_VERSION="${re(NEXT)}"`, "m"));
     assert.match(readFileSync(join(site, "nexa-dl", "QUICKSTART.md"), "utf8"), /prebuilt for macOS \(arm64, x64\)/);
+    const quickstart = readFileSync(join(site, "nexa-dl", "QUICKSTART.md"), "utf8");
+    assert.match(quickstart, /^nexa update\s+# install latest from versions.json$/m);
+    assert.match(quickstart, /^nexa update 3\.10\.1\s+# pin \/ roll back to a published version$/m);
+    assert.match(quickstart, /^nexa update 3\.10\.1 --check --json\s+# preview the target\/action, no install$/m);
   });
 
   it("refuses to rewrite a published CLI version or go backwards", () => {
