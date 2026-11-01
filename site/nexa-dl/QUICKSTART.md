@@ -11,7 +11,7 @@ downstream flow with exact command signatures; items QA flagged as workflow gaps
 ```bash
 # 0. Install (or update - idempotent)
 curl -fsSL https://downloads.agilekit.cc/nexa-dl/install.sh | bash
-nexa --version            # 3.10.1
+nexa --version            # 3.10.2
 nexa doctor               # environment / gate pre-flight (optional external tools may warn)
 
 # 1. Activate the signed license supplied by your NEXA maintainer
