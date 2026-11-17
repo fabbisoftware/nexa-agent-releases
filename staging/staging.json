@@ -1,0 +1,15 @@
+{
+  "version": "3.11.0",
+  "tag": "v3.11.0",
+  "commit": "071df1fba190d9063e201b5801dbf1b3f0a49949",
+  "built_at": "2026-11-17T07:51:18.645Z",
+  "bundle": {
+    "file": "nexa-3.11.0.tgz",
+    "sha256": "5a5cd1df37948c9647e5814f8844ed17d988e967b3fdeb6e0eb4e2ee68174796",
+    "size": 86163562
+  },
+  "cli": true,
+  "agent": false,
+  "dry_run": false,
+  "notes": "New `nexa test create`, `nexa test check` and `nexa test export-excel`: test cases are written as reviewable Markdown from BD/DD documents, test viewpoints and a test policy, then exported to Excel by code, the same Markdown always giving the same workbook. `nexa-design` now ships as a builtin skill, `nexa scan docs` reads Excel, PowerPoint and PDF, and Pi is the only TUI."
+}
